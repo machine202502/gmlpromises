@@ -1,6 +1,5 @@
 
 enum __FUTURE_STATUS {
-	CREATED,
 	HANDLING,
 	AWAIT_REJECTED,
 	RESOLVED,
@@ -32,19 +31,22 @@ function __Future(_handler_init) constructor {
 		
 	#region __constructor
 	{
-		self.__status = __FUTURE_STATUS.CREATED;
-		self.__handler_init = _handler_init;
+		self.__status = __FUTURE_STATUS.HANDLING;
+		self.__handler_init = _handler_init
 		self.__response_resolved_data = undefined;
 		self.__response_rejected_data = undefined;
 		self.__events = [];
+		
+		__init();
 	}
 	#endregion
 	
 	function __run() {
-		var _future_memory = __FutureMemory(); 
-		var _tail = ds_queue_tail(_future_memory.ds_queue_handling);
+		static _ds_queue_handling = __FutureMemory().ds_queue_handling;
+		
+		var _tail = ds_queue_tail(_ds_queue_handling);
 		if (_tail != self) {
-			ds_queue_enqueue(_future_memory.ds_queue_handling, self);
+			ds_queue_enqueue(_ds_queue_handling, self);
 		}
 	}
 	
@@ -185,6 +187,70 @@ function __Future(_handler_init) constructor {
 		return _future;
 	}
 	
+	function __resolve(_resolved_data) {
+		var _is_finished =
+			self.__status == __FUTURE_STATUS.RESOLVED ||
+			self.__status == __FUTURE_STATUS.REJECTED;
+		
+		if (_is_finished) {
+			return;
+		}
+		
+		if (is_struct(_resolved_data) and is_instanceof(_resolved_data, __Future)) {
+			var _next_future = _resolved_data;
+			
+			_next_future.once(function(_is_resolved, _future_result) {
+				if (_is_resolved) {
+					self.__status = __FUTURE_STATUS.RESOLVED;
+					self.__response_resolved_data = _future_result;
+				} else {
+					self.__status = __FUTURE_STATUS.AWAIT_REJECTED;
+					self.__response_rejected_data = _future_result;
+				}
+				
+				__run();
+			});
+		} else {
+			self.__status = __FUTURE_STATUS.RESOLVED;
+			self.__response_resolved_data = _resolved_data;
+			__run();
+		}
+	}
+	
+	function __reject(_rejected_data) {
+		var _is_finished =
+			self.__status == __FUTURE_STATUS.RESOLVED ||
+			self.__status == __FUTURE_STATUS.REJECTED;
+		
+		if (_is_finished) {
+			return;
+		}
+		
+		self.__status = __FUTURE_STATUS.AWAIT_REJECTED;
+		self.__response_rejected_data = _rejected_data;
+		__run();
+	}
+	
+	function __init() {
+		if (false == is_callable(self.__handler_init)) {
+			throw ({
+				message: "dont't callbable handler init function",
+			});
+		}
+		
+		var _handler_init = self.__handler_init;
+		
+		self.__handler_init = undefined;
+		
+		try {
+			_handler_init(method(self, __resolve), method(self, __reject));
+		} catch (_error) {
+			self.__status = __FUTURE_STATUS.AWAIT_REJECTED;
+			self.__response_rejected_data = _error;
+			
+			__run();
+		}
+	}
 }
 
 function future(_handler_init) {
@@ -445,85 +511,16 @@ function future_all_settled(_futures) {
 }
 
 function future_with_resolvers() {
-	var _context = {
-		trigger_future: undefined,
-		trigger_resolve: undefined,
-		future_argument: undefined,
-		future_resolve: undefined,
-		future_reject: undefined,
-		future: undefined,
-	};
-	var _future_trigger = new __Future(method(_context, function(_resolve) {
-		
-		var _future = new __Future(function(_resolve, _reject) {
-			self.future_resolve = _resolve;
-			self.future_reject = _reject;
-			
-			var _trigger_resolve = self.trigger_resolve;
-			
-			self.trigger_resolve = undefined;
-			
-			_trigger_resolve();
-		});
-		
-		self.trigger_resolve = _resolve;
-		self.future = _future;
-		
-		_future.__run();
+	var _uncontext = {};
+	var _future = new __Future(method(_uncontext, function(_resolve, _reject) {
+		self.resolve = _resolve;
+		self.reject = _reject;
 	}));
-	var _future = _future_trigger.pipe(method(_context, function() {
-		var _future = self.future;
-		
-		self.future = undefined;
-		
-		return _future;
-	}));
-	var _resolve = method(_context, function(_resolved) {
-		if (is_struct(self.trigger_future)) {
-			self.future_argument = _resolved;
-			
-			var _trigger_future = self.trigger_future;
-			
-			self.trigger_future = undefined;
-			
-			_trigger_future.once(function() {
-				if (is_callable(self.future_resolve)) {
-					var _future_resolve = self.future_resolve;
-					var _future_argument = self.future_argument;
-					
-					self.future_argument = undefined;
-					self.future_resolve = undefined;
-					self.future_reject = undefined;
-					
-					_future_resolve(_future_argument);
-				}
-			});
-		}
-	});
-	var _reject = method(_context, function(_rejected) {
-		if (is_struct(self.trigger_future)) {
-			self.future_argument = _rejected;
-			
-			var _trigger_future = self.trigger_future;
-			
-			self.trigger_future = undefined;
-			
-			_trigger_future.once(function() {
-				if (is_callable(self.future_reject)) {
-					var _future_reject = self.future_reject;
-					var _future_argument = self.future_argument;
-					
-					self.future_argument = undefined;
-					self.future_resolve = undefined;
-					self.future_reject = undefined;
-					
-					_future_reject(_future_argument);
-				}
-			});
-		}
-	});
+	var _resolve = _uncontext.resolve;
+	var _reject = _uncontext.reject;
 	
-	_context.trigger_future = _future_trigger;
+	_uncontext.resolve = undefined;
+	_uncontext.reject = undefined;
 	
 	var _result = {
 		future: _future,
@@ -531,7 +528,7 @@ function future_with_resolvers() {
 		reject: _reject,
 	};
 	
-	_future_trigger.__run();
+	_future.__run();
 	return _result;
 }
 
