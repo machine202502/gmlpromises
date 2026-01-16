@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"src_functors",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"src_functors",
+  "parent":{
+    "name":"utils",
+    "path":"folders/utils.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

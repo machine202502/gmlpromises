@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"src_asserts",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"src_asserts",
+  "parent":{
+    "name":"utils",
+    "path":"folders/utils.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

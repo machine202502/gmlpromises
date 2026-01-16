@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"src_event_emitter",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"src_event_emitter",
+  "parent":{
+    "name":"utils",
+    "path":"folders/utils.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"src_network_manager",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"src_network_manager",
+  "parent":{
+    "name":"manager",
+    "path":"folders/network/manager.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

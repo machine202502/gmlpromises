@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"src_future",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"src_future",
+  "parent":{
+    "name":"future",
+    "path":"folders/utils/future.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

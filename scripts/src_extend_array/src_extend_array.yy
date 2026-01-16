@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"src_extend_array",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"src_extend_array",
+  "parent":{
+    "name":"utils",
+    "path":"folders/utils.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
