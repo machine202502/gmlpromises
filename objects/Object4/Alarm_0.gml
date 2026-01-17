@@ -18,7 +18,7 @@ async_timeout(2500, "world").on_then(function(_resolved) {
 	});
 });
 
-async_timeout(1500).on_then(function(_resolved) {
+async_timeout(0).on_then(function(_resolved) {
 	show_debug_message("");
 	show_debug_message("timeout 3");
 	show_debug_message(_resolved);

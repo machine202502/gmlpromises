@@ -1,23 +1,25 @@
 
 alarm_set(0, 1);
 
-var _future_memory = __FutureMemory();
-var _ds_queue_handling = _future_memory.ds_queue_handling;
-var _ds_queue_handling_size = ds_queue_size(_ds_queue_handling);
+var _ds_queue_handling = __FutureMemory().ds_queue_handling; 
+var _futures = ds_map_keys_to_array(_ds_queue_handling);
+var _futures_size = ds_map_size(_ds_queue_handling);
+var _future, _status;
+var _event, _events, _events_size;
+var _no_reject_subscription;
+var f, i;
 
-if (_ds_queue_handling_size == 0) {
+if (_futures_size == 0) {
 	return;
 }
 
-var _future, _status, _events, _events_size;
-var _event, _context;
-var _no_reject_subscription;
-var i;
-repeat (_ds_queue_handling_size) {
-	_future = ds_queue_dequeue(_ds_queue_handling);
+ds_map_clear(_ds_queue_handling);
+
+for (f = 0; f < _futures_size; ++f) {
+	_future = array_get(_futures, f);
 	_status = _future.__status;
 	
-	if (_status == __FUTURE_STATUS.AWAIT_REJECTED) {
+	if (_status == __FUTURE_STATUS.REJECTING) {
 		_events = _future.__events;
 		_events_size = array_length(_events);
 		_no_reject_subscription = true;
@@ -30,8 +32,7 @@ repeat (_ds_queue_handling_size) {
 		}
 		
 		_future.__status = __FUTURE_STATUS.REJECTED;
-		
-		ds_queue_enqueue(_ds_queue_handling, _future);
+		_future.__run();
 		
 		if (_no_reject_subscription) {
 			throw _future.__response_rejected_data;

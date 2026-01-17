@@ -8,7 +8,7 @@ function get_http(_url) {
 		self.resolve = _resolve;
 		self.reject = _reject;
 		
-		var _future = async_http_request(self.url, "get").once(function(_resolved, _rejected) {
+		var _future = async_http_request(self.url, "get", {}, 1).once(function(_resolved, _rejected) {
 			
 			if (_rejected) {
 				self.reject({
