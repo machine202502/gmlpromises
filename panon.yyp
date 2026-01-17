@@ -14,7 +14,7 @@
     {"$GMFolder":"","%Name":"manager","folderPath":"folders/network/manager.yy","name":"manager","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"utils","folderPath":"folders/utils.yy","name":"utils","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"future","folderPath":"folders/utils/future.yy","name":"future","resourceType":"GMFolder","resourceVersion":"2.0",},
-    {"$GMFolder":"","%Name":"futures","folderPath":"folders/utils/future/futures.yy","name":"futures","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"test","folderPath":"folders/utils/future/test.yy","name":"test","resourceType":"GMFolder","resourceVersion":"2.0",},
   ],
   "ForcedPrefabProjectReferences":[],
   "IncludedFiles":[],
@@ -26,9 +26,11 @@
   "name":"panon",
   "resources":[
     {"id":{"name":"obj_future_controller","path":"objects/obj_future_controller/obj_future_controller.yy",},},
+    {"id":{"name":"obj_future_test","path":"objects/obj_future_test/obj_future_test.yy",},},
     {"id":{"name":"obj_network_bridge","path":"objects/obj_network_bridge/obj_network_bridge.yy",},},
     {"id":{"name":"obj_network_manager","path":"objects/obj_network_manager/obj_network_manager.yy",},},
     {"id":{"name":"Object4","path":"objects/Object4/Object4.yy",},},
+    {"id":{"name":"room_future_test","path":"rooms/room_future_test/room_future_test.yy",},},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
     {"id":{"name":"src_asserts","path":"scripts/src_asserts/src_asserts.yy",},},
     {"id":{"name":"src_event_emitter","path":"scripts/src_event_emitter/src_event_emitter.yy",},},
@@ -43,6 +45,7 @@
   "resourceType":"GMProject",
   "resourceVersion":"2.0",
   "RoomOrderNodes":[
+    {"roomId":{"name":"room_future_test","path":"rooms/room_future_test/room_future_test.yy",},},
     {"roomId":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
   ],
   "templateType":"game",

@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"src_future_timeout",
   "parent":{
-    "name":"futures",
-    "path":"folders/utils/future/futures.yy",
+    "name":"future",
+    "path":"folders/utils/future.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

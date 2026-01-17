@@ -1,7 +1,8 @@
 
 alarm_set(0, 1);
 
-var _ds_queue_handling = __FutureMemory().ds_queue_handling; 
+var _ds_queue_handling = __FutureMemory().ds_queue_handling;
+var _uncaught_handler = __FutureMemory().uncaught_handler;
 var _futures = ds_map_keys_to_array(_ds_queue_handling);
 var _futures_size = ds_map_size(_ds_queue_handling);
 var _future, _status;
@@ -35,7 +36,11 @@ for (f = 0; f < _futures_size; ++f) {
 		_future.__run();
 		
 		if (_no_reject_subscription) {
-			throw _future.__response_rejected_data;
+			if (is_callable(_uncaught_handler)) {
+				_uncaught_handler(_future.__response_rejected_data);
+			} else {
+				throw _future.__response_rejected_data;
+			}
 		}
 	} else if (_status == __FUTURE_STATUS.RESOLVED || _status == __FUTURE_STATUS.REJECTED) {
 		_events = _future.__events;

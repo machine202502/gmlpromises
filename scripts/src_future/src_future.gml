@@ -18,6 +18,7 @@ function __FutureMemory() {
 			ds_queue_handling: _ds_queue_handling,
 			ds_map_async_http: _ds_map_async_http,
 			ds_map_headers: _ds_map_headers,
+			uncaught_handler: undefined,
 		};
 		
 		return _memory;
@@ -242,20 +243,19 @@ function __Future(_handler_init) constructor {
 		var _context = {
 			callback_finally: _callback_finally,
 		};
-		var _next_future = pipe(function(_is_resolved, _future_result) {
+		
+		var _next_future = pipe(method(_context, function(_is_resolved, _future_result) {
+			var _callback_finally = self.callback_finally;
+			
+			self.callback_finally = undefined;
+			
+			_callback_finally();
+			
 			if (_is_resolved) {
 				return _future_result;
 			} else {
 				throw _future_result;
 			}
-		});
-		
-		_next_future.once(method(_context, function(_is_resolved, _future_result) {
-			var _callback_finally = self.callback_finally;
-			
-			self.callback_finally = undefined;
-			
-			_callback_finally(_is_resolved, _future_result);
 		}));
 		
 		return _next_future;
@@ -274,7 +274,7 @@ function future(_handler_init) {
 	if (ASSERTS_ENABLE) assert(_handler_init, [
 		assert_is_callable("[future] handler_init should be callable")
 	]);
-		
+	
 	var _future = new __Future(_handler_init);
 	_future.__run();
 	return _future;
@@ -579,4 +579,19 @@ function future_with_resolvers() {
 	
 	_future.__run();
 	return _result;
+}
+
+function future_get_uncaught_handler() {
+	
+	return __FutureMemory().uncaught_handler;
+}
+
+function future_set_uncaught_handler(_handler) {
+	if (ASSERTS_ENABLE) assert(_handler, [
+		assert_any([
+			assert_is_callable()
+		], "[future_set_uncaught_handler] handler should be callable"),
+	]);
+	
+	__FutureMemory().uncaught_handler = _handler;
 }
