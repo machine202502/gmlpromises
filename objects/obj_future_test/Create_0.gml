@@ -154,6 +154,13 @@ test_future_race = {
 	expected_c: 742,
 	received_c: undefined,
 	finished_d: false,
+	finished_d_info: undefined,
+	finished_e: false,
+	finished_e_info: undefined,
+	finished_f: undefined,
+	finished_f_info: undefined,
+	finished_g: undefined,
+	finished_g_info: undefined,
 }
 test_future_all_settled = {
 	name: "test_future_all_settled",
@@ -852,14 +859,63 @@ function run_test_future_race() {
 		_d1.future,
 		_d2.future,
 	]).on_then(function(_value) {
-		if (_value == "left" || _value == "right") {
+		if (_value == "right") {
 			obj_future_test.test_future_race.finished_d = true;
 			obj_future_test.test_future_race.finished_d_info = _value;
 		}
 	});
 	
-	_d1.resolve("left");
+	future_race([
+		_d2.future,
+		_d1.future,
+	]).on_then(function(_value) {
+		if (_value == "right") {
+			obj_future_test.test_future_race.finished_e = true;
+			obj_future_test.test_future_race.finished_e_info = _value;
+		}
+	});
+	
 	_d2.resolve("right");
+	_d1.resolve("left");
+	
+	var _context;
+	var _future;
+	var _timesource;
+	var _timesource_context;
+	
+	_timesource_context = {
+		d1: _d1.future,
+		d2: _d2.future,
+	};
+	_timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_timesource_context, function() {
+		time_source_destroy(self.timesource);
+		
+		var _d1 = self.d1;
+		var _d2 = self.d2;
+		
+		future_race([
+			_d1,
+			_d2,
+		]).on_then(function(_value) {
+			if (_value == "left") {
+				obj_future_test.test_future_race.finished_f = true;
+				obj_future_test.test_future_race.finished_f_info = _value;
+			}
+		});
+	
+		future_race([
+			_d2,
+			_d1,
+		]).on_then(function(_value) {
+			if (_value == "right") {
+				obj_future_test.test_future_race.finished_g = true;
+				obj_future_test.test_future_race.finished_g_info = _value;
+			}
+		});
+	}));
+	
+	_timesource_context.timesource = _timesource;
+	time_source_start(_timesource);
 	
 }
 
@@ -941,6 +997,11 @@ function run_test_future_all_settled() {
 	
 }
 
+function run_test_orders() {
+
+	
+	
+}
 
 /// RUN
 

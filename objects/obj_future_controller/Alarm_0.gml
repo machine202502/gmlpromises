@@ -1,63 +1,63 @@
 
 alarm_set(0, 1);
 
-var _ds_queue_handling = __FutureMemory().ds_queue_handling;
-var _uncaught_handler = __FutureMemory().uncaught_handler;
-var _futures = ds_map_keys_to_array(_ds_queue_handling);
-var _futures_size = ds_map_size(_ds_queue_handling);
-var _future, _status;
-var _event, _events, _events_size;
-var _no_reject_subscription;
-var f, i;
+var _uncaught_handler = self.future_memory.uncaught_handler;
+var _queue_finishing = self.future_memory.queue_finishing;
+var _queue_finishing_swap = self.future_memory.queue_finishing_swap;
+var _queue_notifications = self.future_memory.queue_notifications;
+var _queue_notifications_swap = self.future_memory.queue_notifications_swap;
+var _queue_finishing_size = array_length(_queue_finishing);
+var _queue_notifications_size = array_length(_queue_notifications);
+var _future;
+var _finished_without_subscriptions, _rejecting_without_subscriptions;
+var _notification;
+var _resolve, _reject;
+var _is_resolved, _result;
+var i;
 
-if (_futures_size == 0) {
-	return;
-}
+self.future_memory.queue_finishing = _queue_finishing_swap;
+self.future_memory.queue_finishing_swap = _queue_finishing;
+self.future_memory.queue_notifications = _queue_notifications_swap;
+self.future_memory.queue_notifications_swap = _queue_notifications;
 
-ds_map_clear(_ds_queue_handling);
-
-for (f = 0; f < _futures_size; ++f) {
-	_future = array_get(_futures, f);
-	_status = _future.__status;
+for (i = 0; i < _queue_finishing_size; ++i) {
+	_future = array_get(_queue_finishing, i);
+	_finished_without_subscriptions = _future.__finished();
+	_is_resolved = _future.__is_resolved();
+	_result = _future.__get_result();
+	_rejecting_without_subscriptions 
+		= false == _is_resolved and _finished_without_subscriptions; 
 	
-	if (_status == __FUTURE_STATUS.REJECTING) {
-		_events = _future.__events;
-		_events_size = array_length(_events);
-		_no_reject_subscription = true;
-		
-		for (i = 0; i < _events_size; ++i) {
-			_event = array_get(_events, i);
-			if (is_callable(_event.reject)) {
-				_no_reject_subscription = false;
-			}
-		}
-		
-		_future.__status = __FUTURE_STATUS.REJECTED;
-		_future.__run();
-		
-		if (_no_reject_subscription) {
-			_future.__uncaught_handled = true;
-			
-			if (is_callable(_uncaught_handler)) {
-				_uncaught_handler(_future.__response_rejected_data);
-			} else {
-				throw _future.__response_rejected_data;
-			}
-		}
-	} else if (_status == __FUTURE_STATUS.RESOLVED || _status == __FUTURE_STATUS.REJECTED) {
-		_events = _future.__events;
-		_events_size = array_length(_events);
-		
-		_future.__events = [];
-		
-		for (i = 0; i < _events_size; ++i) {
-			_event = array_get(_events, i);
-			
-			if (_status == __FUTURE_STATUS.RESOLVED and is_callable(_event.resolve) ) {
-				_event.resolve(_future.__response_resolved_data);
-			} else if (_status == __FUTURE_STATUS.REJECTED and is_callable(_event.reject) ) {
-				_event.reject(_future.__response_rejected_data);
-			}
+	if (_rejecting_without_subscriptions) {
+		if (is_callable(_uncaught_handler)) {
+			_uncaught_handler(_result);
+		} else {
+			throw _result;
 		}
 	}
 }
+array_resize(_queue_finishing, 0);
+
+for (i = 0; i < _queue_notifications_size; ++i) {
+	_notification = array_get(_queue_notifications, i);
+	_future = _notification.future;
+	_resolve = _notification.resolve;
+	_reject = _notification.reject;
+	_is_resolved = _future.__is_resolved();
+	_result = _future.__get_result();
+	
+	try {
+		if (_is_resolved) {
+			_resolve(_result);
+		} else {
+			_reject(_result);
+		}
+	} catch (_error) {
+		if (is_callable(_uncaught_handler)) {
+			_uncaught_handler(_error);
+		} else {
+			throw _error;
+		}
+	}
+}
+array_resize(_queue_notifications, 0);

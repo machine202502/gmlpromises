@@ -416,6 +416,21 @@ if (_test.finished_d) {
 } else {
 	show_debug_message("FAIL: d not finished");
 }
+if (_test.finished_e) {
+	show_debug_message("OK: e finished (" + _test.finished_e_info + ")");
+} else {
+	show_debug_message("FAIL: e not finished");
+}
+if (_test.finished_f) {
+	show_debug_message("OK: f finished (" + _test.finished_f_info + ")");
+} else {
+	show_debug_message("FAIL: f not finished");
+}
+if (_test.finished_g) {
+	show_debug_message("OK: g finished (" + _test.finished_g_info + ")");
+} else {
+	show_debug_message("FAIL: g not finished");
+}
 
 _test = test_future_all_settled;
 

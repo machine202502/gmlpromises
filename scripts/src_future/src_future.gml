@@ -2,25 +2,28 @@
 #macro FUTURE_ENABLE_WARN true
 
 enum __FUTURE_STATUS {
-	HANDLING = 0,
-	REJECTING = 1,
-	INACTION = 2,
-	RESOLVED = 3,
-	REJECTED = 4,
+	PENDING = 0,
+	RESOLVING = 1,
+	REJECTING = 2,
+	INACTION = 3,
+	RESOLVED = 10,
+	REJECTED = 11,
 }
 
 function __FutureMemory() {
 	
 	static _memory = (function() {
 		
-		var _ds_queue_handling = ds_map_create();
 		var _ds_map_async_http = ds_map_create();
 		var _ds_map_headers = ds_map_create();
 		var _memory = {
-			ds_queue_handling: _ds_queue_handling,
+			queue_finishing: [],
+			queue_finishing_swap: [],
+			queue_notifications: [],
+			queue_notifications_swap: [],
+			uncaught_handler: undefined,
 			ds_map_async_http: _ds_map_async_http,
 			ds_map_headers: _ds_map_headers,
-			uncaught_handler: undefined,
 		};
 		
 		return _memory;
@@ -39,43 +42,26 @@ function __Future(_handler_init) constructor {
 			assert_is_callable("[__Future.constructor] handler_init should be callable")
 		]);
 		
-		self.__status = __FUTURE_STATUS.HANDLING;
+		self.__status = __FUTURE_STATUS.PENDING;
 		self.__handler_init = _handler_init
-		self.__response_resolved_data = undefined;
-		self.__response_rejected_data = undefined;
-		self.__events = [];
-		self.__uncaught_handled = false;
+		self.__response_result = undefined;
+		self.__finished_without_subscriptions = false;
+		self.__postponed_events = [];
 		
-		__init();
+		__start();
 	}
 	#endregion
 	
-	function __run() {
-		static _ds_queue_handling = __FutureMemory().ds_queue_handling;
+	function __add_to_queue_finishing() {
+		static _future_memory = __FutureMemory();
 		
-		ds_map_add(_ds_queue_handling, self, true);
-	}
-	
-	function __subscribe(_callback_resolve=undefined, _callback_reject = undefined) {
+		var _queue_finishing = _future_memory.queue_finishing;
+		array_push(_queue_finishing, self);
 		
-		if (FUTURE_ENABLE_WARN) {
-			
-			if (self.__uncaught_handled) {
-				show_debug_message("warn::[__Future.__subscribe] subscribe on uncaught handled future");
-			}
-			
-		}
-		
-		var _event = {
-			resolve: _callback_resolve,
-			reject: _callback_reject,
-		};
-		
-		array_push(self.__events, _event);
 	}
 	
 	function __resolve(_resolved_data) {
-		var _is_handling = self.__status == __FUTURE_STATUS.HANDLING;
+		var _is_handling = self.__status == __FUTURE_STATUS.PENDING;
 		
 		if (false == _is_handling) {
 			return;
@@ -88,37 +74,37 @@ function __Future(_handler_init) constructor {
 			
 			_next_future.once(function(_is_resolved, _future_result) {
 				if (_is_resolved) {
-					self.__status = __FUTURE_STATUS.RESOLVED;
-					self.__response_resolved_data = _future_result;
+					self.__status = __FUTURE_STATUS.RESOLVING;
+					self.__response_result = _future_result;
 				} else {
 					self.__status = __FUTURE_STATUS.REJECTING;
-					self.__response_rejected_data = _future_result;
+					self.__response_result = _future_result;
 				}
 				
-				__run();
+				__add_to_queue_finishing();
 			});
 		} else {
-			self.__status = __FUTURE_STATUS.RESOLVED;
-			self.__response_resolved_data = _resolved_data;
+			self.__status = __FUTURE_STATUS.RESOLVING;
+			self.__response_result = _resolved_data;
 			
-			__run();
+			__add_to_queue_finishing();
 		}
 	}
 	
 	function __reject(_rejected_data) {
-		var _is_handling = self.__status == __FUTURE_STATUS.HANDLING;
+		var _is_handling = self.__status == __FUTURE_STATUS.PENDING;
 		
 		if (false == _is_handling) {
 			return;
 		}
 		
 		self.__status = __FUTURE_STATUS.REJECTING;
-		self.__response_rejected_data = _rejected_data;
+		self.__response_result = _rejected_data;
 		
-		__run();
+		__add_to_queue_finishing();
 	}
 	
-	function __init() {
+	function __start() {
 		if (false == is_callable(self.__handler_init)) {
 			throw ({
 				message: "dont't callbable handler init function",
@@ -129,14 +115,75 @@ function __Future(_handler_init) constructor {
 		
 		self.__handler_init = undefined;
 		
+		var _resolve = method(self, __resolve);
+		var _reject = method(self, __reject);
+		
 		try {
-			_handler_init(method(self, __resolve), method(self, __reject));
+			_handler_init(_resolve, _reject);
 		} catch (_error) {
-			self.__status = __FUTURE_STATUS.REJECTING;
-			self.__response_rejected_data = _error;
-			
-			__run();
+			_reject(_error);
 		}
+	}
+	
+	function __subscribe(_callback_resolve, _callback_reject) {
+		static _future_memory = __FutureMemory();
+		
+		if (FUTURE_ENABLE_WARN) {
+			
+			if (self.__finished_without_subscriptions) {
+				show_debug_message("warn::[__Future.__subscribe] subscribe on uncaught handled future");
+			}
+			
+		}
+		
+		var _future = self;
+		var _event = {
+			future: _future,
+			resolve: _callback_resolve,
+			reject: _callback_reject,
+		};
+		
+		var _is_finished =
+			self.__status == __FUTURE_STATUS.RESOLVED or self.__status == __FUTURE_STATUS.REJECTED;
+			
+		if (_is_finished) {
+			var _queue_notifications = _future_memory.queue_notifications;
+			array_push(_queue_notifications, _event);
+		} else {
+			array_push(self.__postponed_events, _event);
+		}
+	}
+	
+	function __finished() {
+		static _future_memory = __FutureMemory();
+		
+		var _is_finishing =
+			self.__status == __FUTURE_STATUS.RESOLVING or self.__status == __FUTURE_STATUS.REJECTING;
+		
+		if (false == _is_finishing) {
+			return;
+		}
+		
+		if (self.__status == __FUTURE_STATUS.RESOLVING) {
+			self.__status = __FUTURE_STATUS.RESOLVED;
+		} else {
+			self.__status = __FUTURE_STATUS.REJECTED;
+		}
+		
+		var _queue_notifications = _future_memory.queue_notifications;
+		var _events = self.__postponed_events;
+		var _events_size = array_length(_events);
+		var i, _event;
+		
+		for (i = 0; i < _events_size; ++i) {
+			_event = array_get(_events, i);
+			array_push(_queue_notifications, _event);
+		}
+		
+		self.__postponed_events = undefined;
+		self.__finished_without_subscriptions = _events_size == 0;
+		
+		return self.__finished_without_subscriptions;
 	}
 	
 	function once(_callback_subscription) {
@@ -163,7 +210,6 @@ function __Future(_handler_init) constructor {
 		});
 		
 		__subscribe(_resolve, _reject);
-		__run();
 		
 	}
 	
@@ -272,6 +318,14 @@ function __Future(_handler_init) constructor {
 		return _next_future;
 	}
 	
+	function __is_resolved() {
+		return self.__status == __FUTURE_STATUS.RESOLVED;	
+	}
+	
+	function __get_result() {
+		return self.__response_result;
+	}
+	
 }
 
 function is_future(_value) {
@@ -287,7 +341,6 @@ function future(_handler_init) {
 	]);
 	
 	var _future = new __Future(_handler_init);
-	_future.__run();
 	return _future;
 }
 
@@ -298,7 +351,6 @@ function future_resolve(_value=undefined) {
 	var _future = new __Future(method(_context, function(_resolve, _reject) {
 		_resolve(self.value);
 	}));
-	_future.__run();
 	return _future;
 }
 
@@ -309,7 +361,6 @@ function future_reject(_value) {
 	var _future = new __Future(method(_context, function(_resolve, _reject) {
 		_reject(self.value);
 	}));
-	_future.__run();
 	return _future;
 }
 
@@ -359,7 +410,7 @@ function future_all(_futures) {
 						
 						for (i = 0; i < _futures_size; ++i) {
 							_future = array_get(_futures, i);
-							_value = _future.__response_resolved_data;
+							_value = _future.__get_result();
 							array_set(_values, i, _value);
 						}
 						
@@ -381,7 +432,6 @@ function future_all(_futures) {
 			});
 		}
 	}));
-	_future.__run();
 	return _future;
 }
 
@@ -440,7 +490,7 @@ function future_any(_futures) {
 						
 						for (i = 0; i < _futures_size; ++i) {
 							_future = array_get(_futures, i);
-							_value = _future.__response_rejected_data;
+							_value = _future.__get_result();
 							array_set(_values, i, _value);
 						}
 						
@@ -454,7 +504,6 @@ function future_any(_futures) {
 			});
 		}
 	}));
-	_future.__run();
 	return _future;
 }
 
@@ -500,7 +549,6 @@ function future_race(_futures) {
 			});
 		}
 	}));
-	_future.__run();
 	return _future;
 }
 
@@ -543,19 +591,19 @@ function future_all_settled(_futures) {
 					var _resolve = self.resolve;
 					var _futures = self.futures;
 					var _futures_size = self.size;
-					var _future, _value, _is_resolved, i;
+					var _future, _result, _is_resolved, i;
 					var _values = array_create(_futures_size);
+					var _value;
 					
 					for (i = 0; i < _futures_size; ++i) {
 						_future = array_get(_futures, i);
-						_is_resolved = _future.__status == __FUTURE_STATUS.RESOLVED;
-						_value = _is_resolved
-							? _future.__response_resolved_data 
-							: _future.__response_rejected_data;
-						array_set(_values, i, {
+						_is_resolved = _future.__is_resolved();
+						_result = _future.__get_result();
+						_value = {
 							is_resolved: _is_resolved,
-							result: _value,
-						});
+							result: _result,
+						};
+						array_set(_values, i, _value);
 					}
 					
 					self.futures = undefined;
@@ -566,7 +614,6 @@ function future_all_settled(_futures) {
 			});
 		}
 	}));
-	_future.__run();
 	return _future;
 }
 
@@ -588,7 +635,6 @@ function future_with_resolvers() {
 		reject: _reject,
 	};
 	
-	_future.__run();
 	return _result;
 }
 
