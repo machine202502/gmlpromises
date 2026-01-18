@@ -72,7 +72,7 @@ function __Future(_handler_init) constructor {
 			
 			self.__status = __FUTURE_STATUS.INACTION;
 			
-			_next_future.once(function(_is_resolved, _future_result) {
+			_next_future.__subscribe(function(_is_resolved, _future_result) {
 				if (_is_resolved) {
 					self.__status = __FUTURE_STATUS.RESOLVING;
 					self.__response_result = _future_result;
@@ -125,35 +125,6 @@ function __Future(_handler_init) constructor {
 		}
 	}
 	
-	function __subscribe(_callback_resolve, _callback_reject) {
-		static _future_memory = __FutureMemory();
-		
-		if (FUTURE_ENABLE_WARN) {
-			
-			if (self.__finished_without_subscriptions) {
-				show_debug_message("warn::[__Future.__subscribe] subscribe on uncaught handled future");
-			}
-			
-		}
-		
-		var _future = self;
-		var _event = {
-			future: _future,
-			resolve: _callback_resolve,
-			reject: _callback_reject,
-		};
-		
-		var _is_finished =
-			self.__status == __FUTURE_STATUS.RESOLVED or self.__status == __FUTURE_STATUS.REJECTED;
-			
-		if (_is_finished) {
-			var _queue_notifications = _future_memory.queue_notifications;
-			array_push(_queue_notifications, _event);
-		} else {
-			array_push(self.__postponed_events, _event);
-		}
-	}
-	
 	function __finished() {
 		static _future_memory = __FutureMemory();
 		
@@ -186,36 +157,42 @@ function __Future(_handler_init) constructor {
 		return self.__finished_without_subscriptions;
 	}
 	
-	function once(_callback_subscription) {
+	function __subscribe(_callback_subscription) {
+		static _future_memory = __FutureMemory();
+		
 		if (ASSERTS_ENABLE) assert(_callback_subscription, [
-			assert_is_callable("[__Future.once] callback_subscription should be callable")
+			assert_is_callable("[__Future.__subscribe] callback_subscription should be callable")
 		]);
 		
-		var _context = {
-			subscription: _callback_subscription,
-		};
-		var _resolve = method(_context, function(_resolved) {
-			var _subscription = self.subscription;
+		if (FUTURE_ENABLE_WARN) {
 			
-			self.subscription = undefined;
+			if (self.__finished_without_subscriptions) {
+				show_debug_message("warn::[__Future.__subscribe] subscribe on uncaught handled future");
+			}
 			
-			_subscription(true, _resolved);
-		});
-		var _reject = method(_context, function(_rejected) {
-			var _subscription = self.subscription;
-			
-			self.subscription = undefined;
-			
-			_subscription(false, _rejected);
-		});
+		}
 		
-		__subscribe(_resolve, _reject);
+		var _future = self;
+		var _event = {
+			future: _future,
+			callback_subscription: _callback_subscription,
+		};
+		
+		var _is_finished =
+			self.__status == __FUTURE_STATUS.RESOLVED or self.__status == __FUTURE_STATUS.REJECTED;
+			
+		if (_is_finished) {
+			var _queue_notifications = _future_memory.queue_notifications;
+			array_push(_queue_notifications, _event);
+		} else {
+			array_push(self.__postponed_events, _event);
+		}
 		
 	}
 	
-	function pipe(_callback_subscription) {
+	function on(_callback_subscription) {
 		if (ASSERTS_ENABLE) assert(_callback_subscription, [
-			assert_is_callable("[__Future.pipe] callback_subscription should be callable")
+			assert_is_callable("[__Future.on] callback_subscription should be callable")
 		]);
 		
 		var _fwr = future_with_resolvers();
@@ -224,7 +201,7 @@ function __Future(_handler_init) constructor {
 		_fwr.future = undefined;
 		_fwr.callback_subscription = _callback_subscription;
 		
-		once(method(_fwr, function(_is_resolved, _future_result) {
+		__subscribe(method(_fwr, function(_is_resolved, _future_result) {
 			
 			var _resolve = self.resolve;
 			var _reject = self.reject;
@@ -256,7 +233,7 @@ function __Future(_handler_init) constructor {
 		var _context = {
 			callback_then: _callback_then,
 		};
-		var _next_future = pipe(method(_context, function(_is_resolved, _future_result) {
+		var _next_future = on(method(_context, function(_is_resolved, _future_result) {
 			var _callback_then = self.callback_then;
 			
 			self.callback_then = undefined;
@@ -278,7 +255,7 @@ function __Future(_handler_init) constructor {
 		var _context = {
 			callback_catch: _callback_catch,
 		};
-		var _next_future = pipe(method(_context, function(_is_resolved, _future_result) {
+		var _next_future = on(method(_context, function(_is_resolved, _future_result) {
 			var _callback_catch = self.callback_catch;
 			
 			self.callback_catch = undefined;
@@ -301,7 +278,7 @@ function __Future(_handler_init) constructor {
 			callback_finally: _callback_finally,
 		};
 		
-		var _next_future = pipe(method(_context, function(_is_resolved, _future_result) {
+		var _next_future = on(method(_context, function(_is_resolved, _future_result) {
 			var _callback_finally = self.callback_finally;
 			
 			self.callback_finally = undefined;
@@ -393,7 +370,7 @@ function future_all(_futures) {
 		
 		for (i = 0; i < _futures_size; ++i) {
 			_future = array_get(_futures, i);
-			_future.once(function(_is_resolved, _future_result) {
+			_future.__subscribe(function(_is_resolved, _future_result) {
 				if (false == is_array(self.futures)) {
 					return;
 				}
@@ -405,13 +382,13 @@ function future_all(_futures) {
 						var _resolve = self.resolve
 						var _futures = self.futures;
 						var _futures_size = self.size;
-						var _future, _value, i;
+						var _future, _result, i;
 						var _values = array_create(_futures_size);
 						
 						for (i = 0; i < _futures_size; ++i) {
 							_future = array_get(_futures, i);
-							_value = _future.__get_result();
-							array_set(_values, i, _value);
+							_result = _future.__get_result();
+							array_set(_values, i, _result);
 						}
 						
 						self.futures = undefined;
@@ -464,7 +441,7 @@ function future_any(_futures) {
 		
 		for (i = 0; i < _futures_size; ++i) {
 			_future = array_get(_futures, i);
-			_future.once(function(_is_resolved, _future_result) {
+			_future.__subscribe(function(_is_resolved, _future_result) {
 				if (false == is_array(self.futures)) {
 					return;
 				}
@@ -485,13 +462,13 @@ function future_any(_futures) {
 						var _reject = self.reject
 						var _futures = self.futures;
 						var _futures_size = self.size;
-						var _future, _value, i;
+						var _future, _result, i;
 						var _values = array_create(_futures_size);
 						
 						for (i = 0; i < _futures_size; ++i) {
 							_future = array_get(_futures, i);
-							_value = _future.__get_result();
-							array_set(_values, i, _value);
+							_result = _future.__get_result();
+							array_set(_values, i, _result);
 						}
 						
 						self.futures = undefined;
@@ -529,7 +506,7 @@ function future_race(_futures) {
 		
 		for (i = 0; i < _futures_size; ++i) {
 			_future = array_get(_futures, i);
-			_future.once(function(_is_resolved, _future_result) {
+			_future.__subscribe(function(_is_resolved, _future_result) {
 				if (false == is_array(self.futures)) {
 					return;
 				}
@@ -580,7 +557,7 @@ function future_all_settled(_futures) {
 		
 		for (i = 0; i < _futures_size; ++i) {
 			_future = array_get(_futures, i);
-			_future.once(function() {
+			_future.__subscribe(function() {
 				if (false == is_array(self.futures)) {
 					return;
 				}
@@ -591,9 +568,9 @@ function future_all_settled(_futures) {
 					var _resolve = self.resolve;
 					var _futures = self.futures;
 					var _futures_size = self.size;
-					var _future, _result, _is_resolved, i;
-					var _values = array_create(_futures_size);
-					var _value;
+					var _future, _is_resolved, _result;
+					var _values = array_create(_futures_size), _value;
+					var i;
 					
 					for (i = 0; i < _futures_size; ++i) {
 						_future = array_get(_futures, i);

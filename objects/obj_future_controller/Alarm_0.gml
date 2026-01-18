@@ -11,7 +11,7 @@ var _queue_notifications_size = array_length(_queue_notifications);
 var _future;
 var _finished_without_subscriptions, _rejecting_without_subscriptions;
 var _notification;
-var _resolve, _reject;
+var _callback_subscription;
 var _is_resolved, _result;
 var i;
 
@@ -25,8 +25,7 @@ for (i = 0; i < _queue_finishing_size; ++i) {
 	_finished_without_subscriptions = _future.__finished();
 	_is_resolved = _future.__is_resolved();
 	_result = _future.__get_result();
-	_rejecting_without_subscriptions 
-		= false == _is_resolved and _finished_without_subscriptions; 
+	_rejecting_without_subscriptions = false == _is_resolved and _finished_without_subscriptions; 
 	
 	if (_rejecting_without_subscriptions) {
 		if (is_callable(_uncaught_handler)) {
@@ -41,17 +40,12 @@ array_resize(_queue_finishing, 0);
 for (i = 0; i < _queue_notifications_size; ++i) {
 	_notification = array_get(_queue_notifications, i);
 	_future = _notification.future;
-	_resolve = _notification.resolve;
-	_reject = _notification.reject;
+	_callback_subscription = _notification.callback_subscription;
 	_is_resolved = _future.__is_resolved();
 	_result = _future.__get_result();
 	
 	try {
-		if (_is_resolved) {
-			_resolve(_result);
-		} else {
-			_reject(_result);
-		}
+		_callback_subscription(_is_resolved, _result);
 	} catch (_error) {
 		if (is_callable(_uncaught_handler)) {
 			_uncaught_handler(_error);

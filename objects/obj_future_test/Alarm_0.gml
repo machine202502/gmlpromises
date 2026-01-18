@@ -391,6 +391,26 @@ if (_test.finished_d) {
 } else {
 	show_debug_message("FAIL: d");
 }
+if (_test.finished_e1) {
+	show_debug_message("OK: e1 (" + _test.finished_e1_info + ")");
+} else {
+	show_debug_message("FAIL: e1");
+}
+if (_test.finished_e2) {
+	show_debug_message("OK: e2 (" + _test.finished_e2_info + ")");
+} else {
+	show_debug_message("FAIL: e2");
+}
+if (_test.finished_e3) {
+	show_debug_message("OK: e3 (" + _test.finished_e3_info + ")");
+} else {
+	show_debug_message("FAIL: e3");
+}
+if (_test.finished_e4) {
+	show_debug_message("OK: e4 (" + _test.finished_e4_info + ")");
+} else {
+	show_debug_message("FAIL: e4");
+}
 
 _test = test_future_race;
 

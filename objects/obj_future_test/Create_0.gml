@@ -144,6 +144,14 @@ test_future_any = {
 	finished_b: false,
 	finished_c: false,
 	finished_d: false,
+	finished_e1: false,
+	finished_e1_info: undefined,
+	finished_e2: false,
+	finished_e2_info: undefined,
+	finished_e3: false,
+	finished_e3_info: undefined,
+	finished_e4: false,
+	finished_e4_info: undefined,
 }
 test_future_race = {
 	name: "test_future_race",
@@ -811,6 +819,70 @@ function run_test_future_any() {
 		}
 	})
 	
+	var _e1 = future_with_resolvers();
+	var _e2 = future_with_resolvers();
+	
+	future_any([
+		_e1.future,
+		_e2.future,
+	]).on_then(function(_value) {
+		if (_value == "right") {
+			obj_future_test.test_future_any.finished_e1 = true;
+			obj_future_test.test_future_any.finished_e1_info = _value;
+		}
+	});
+	
+	future_any([
+		_e2.future,
+		_e1.future,
+	]).on_then(function(_value) {
+		if (_value == "right") {
+			obj_future_test.test_future_any.finished_e2 = true;
+			obj_future_test.test_future_any.finished_e2_info = _value;
+		}
+	});
+	
+	_e2.resolve("right");
+	_e1.resolve("left");
+	
+	var _context;
+	var _future;
+	var _timesource;
+	var _timesource_context;
+	
+	_timesource_context = {
+		e1: _e1.future,
+		e2: _e2.future,
+	};
+	_timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_timesource_context, function() {
+		time_source_destroy(self.timesource);
+		
+		var _e1 = self.e1;
+		var _e2 = self.e2;
+		
+		future_any([
+			_e1,
+			_e2,
+		]).on_then(function(_value) {
+			if (_value == "left") {
+				obj_future_test.test_future_any.finished_e3 = true;
+				obj_future_test.test_future_any.finished_e3_info = _value;
+			}
+		});
+	
+		future_any([
+			_e2,
+			_e1,
+		]).on_then(function(_value) {
+			if (_value == "right") {
+				obj_future_test.test_future_any.finished_e4 = true;
+				obj_future_test.test_future_any.finished_e4_info = _value;
+			}
+		});
+	}));
+	
+	_timesource_context.timesource = _timesource;
+	time_source_start(_timesource);
 	
 }
 
@@ -993,12 +1065,6 @@ function run_test_future_all_settled() {
 			obj_future_test.test_future_all_settled.finished_d = true;
 		}
 	})
-	
-	
-}
-
-function run_test_orders() {
-
 	
 	
 }
