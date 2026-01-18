@@ -91,6 +91,17 @@ if (_test.is_finished) {
 	show_debug_message("FAIL: finished");
 }
 
+_test = test_uncaught_handler_4;
+
+show_debug_message("");
+show_debug_message(_test.name);
+if (_test.expected == _test.received) {
+	show_debug_message("OK: equals");
+} else {
+	show_debug_message("FAIL: not equals");
+	show_debug_message(_test);
+}
+
 _test = test_reject_after_throw;
 
 show_debug_message("");

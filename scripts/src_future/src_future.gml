@@ -1,4 +1,6 @@
 
+#macro FUTURE_ENABLE_WARN true
+
 enum __FUTURE_STATUS {
 	HANDLING = 0,
 	REJECTING = 1,
@@ -42,6 +44,7 @@ function __Future(_handler_init) constructor {
 		self.__response_resolved_data = undefined;
 		self.__response_rejected_data = undefined;
 		self.__events = [];
+		self.__uncaught_handled = false;
 		
 		__init();
 	}
@@ -54,6 +57,14 @@ function __Future(_handler_init) constructor {
 	}
 	
 	function __subscribe(_callback_resolve=undefined, _callback_reject = undefined) {
+		
+		if (FUTURE_ENABLE_WARN) {
+			
+			if (self.__uncaught_handled) {
+				show_debug_message("warn::[__Future.__subscribe] subscribe on uncaught handled future");
+			}
+			
+		}
 		
 		var _event = {
 			resolve: _callback_resolve,

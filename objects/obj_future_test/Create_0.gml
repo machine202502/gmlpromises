@@ -37,6 +37,11 @@ test_uncaught_handler_3 = {
 	name: "test_uncaught_handler_3",
 	is_finished: false,
 }
+test_uncaught_handler_4 = {
+	name: "test_uncaught_handler_4",
+	expected: 3,
+	received: 0,
+}
 test_reject_after_throw = {
 	name: "test_reject_after_throw",
 	is_finished: false,
@@ -196,6 +201,37 @@ function run_test_uncaught_handler_3() {
 		.on_then(functor_void)
 		.on_finally(functor_void)
 		.on_catch(functor_throw);
+	
+}
+
+function run_test_uncaught_handler_4() {
+	
+	var _error = function() {
+		obj_future_test.test_uncaught_handler_4.received += 1;
+	}
+	var _future = future_reject(_error);
+	
+	_future
+		.on_then(functor_void)
+		.on_catch(functor_void);
+	
+	_future
+		.on_then(functor_void);
+	
+	_future
+		.on_finally(functor_void);
+	
+	var _context = {
+		future: _future,	
+	};
+	var _timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_context, function() {
+		time_source_destroy(self.timesource);
+		
+		self.future.on_finally(functor_void);
+	}));
+		
+	_context.timesource = _timesource;
+	time_source_start(_timesource);
 	
 }
 
@@ -534,6 +570,7 @@ run_test_later_reject();
 run_test_uncaught_handler();
 run_test_uncaught_handler_2();
 run_test_uncaught_handler_3();
+run_test_uncaught_handler_4();
 run_test_reject_after_throw();
 run_test_finally_after_resolve();
 run_test_finally_after_reject();

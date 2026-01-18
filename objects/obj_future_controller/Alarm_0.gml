@@ -36,6 +36,8 @@ for (f = 0; f < _futures_size; ++f) {
 		_future.__run();
 		
 		if (_no_reject_subscription) {
+			_future.__uncaught_handled = true;
+			
 			if (is_callable(_uncaught_handler)) {
 				_uncaught_handler(_future.__response_rejected_data);
 			} else {
