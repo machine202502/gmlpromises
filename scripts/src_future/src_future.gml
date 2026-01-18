@@ -1,10 +1,10 @@
 
 enum __FUTURE_STATUS {
-	HANDLING,
-	REJECTING,
-	INACTION,
-	RESOLVED,
-	REJECTED,
+	HANDLING = 0,
+	REJECTING = 1,
+	INACTION = 2,
+	RESOLVED = 3,
+	REJECTED = 4,
 }
 
 function __FutureMemory() {
@@ -280,7 +280,7 @@ function future(_handler_init) {
 	return _future;
 }
 
-function future_resolve(_value) {
+function future_resolve(_value=undefined) {
 	var _context = {
 		value: _value,	
 	};
