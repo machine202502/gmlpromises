@@ -9,7 +9,7 @@ function uuid() {
 	var _v, _a, _b;
    
 	for (i = 0; i < 16; ++i) {
-        _array[i] = (irandom(255) + current_time) mod 256;
+        _array[i] = irandom(255);
     }
 	
     _array[6] = (_array[6] & $0F) | $40;

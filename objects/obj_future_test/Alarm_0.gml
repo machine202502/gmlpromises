@@ -291,3 +291,153 @@ if (_test.on_11_expected == _test.on_11_received_later) {
 } else {
 	show_debug_message("FAIL: 11 no equals later");
 }
+
+_test = test_resolvers;
+
+show_debug_message("");
+show_debug_message(_test.name);
+if (_test.callable_resolve) {
+	show_debug_message("OK: is callable resolve");
+} else {
+	show_debug_message("FAIL: not callable resolve");
+}
+if (_test.callable_reject) {
+	show_debug_message("OK: is callable reject");
+} else {
+	show_debug_message("FAIL: not callable reject");
+}
+if (_test.resolve_expected == _test.resolve_received) {
+	show_debug_message("OK: equals resolved");
+} else {
+	show_debug_message("FAIL: not equals resolved");
+}
+if (_test.reject_expected == _test.reject_received) {
+	show_debug_message("OK: equals rejected");
+} else {
+	show_debug_message("FAIL: not equals rejected");
+}
+
+_test = test_resolvers_2;
+
+show_debug_message("");
+show_debug_message(_test.name);
+if (_test.callable_resolve) {
+	show_debug_message("OK: is callable resolve");
+} else {
+	show_debug_message("FAIL: not callable resolve");
+}
+if (_test.callable_reject) {
+	show_debug_message("OK: is callable reject");
+} else {
+	show_debug_message("FAIL: not callable reject");
+}
+if (_test.resolve_expected == _test.resolve_received) {
+	show_debug_message("OK: equals resolved");
+} else {
+	show_debug_message("FAIL: not equals resolved");
+}
+if (_test.reject_expected == _test.reject_received) {
+	show_debug_message("OK: equals rejected");
+} else {
+	show_debug_message("FAIL: not equals rejected");
+}
+
+_test = test_future_all;
+
+show_debug_message("");
+show_debug_message(_test.name);
+if (_test.finished_a) {
+	show_debug_message("OK: a");
+} else {
+	show_debug_message("FAIL: a");
+}
+if (_test.finished_b) {
+	show_debug_message("OK: b");
+} else {
+	show_debug_message("FAIL: b");
+}
+if (_test.finished_c) {
+	show_debug_message("OK: c (" + _test.c_info + ")");
+} else {
+	show_debug_message("FAIL: c");
+}
+if (_test.finished_c2) {
+	show_debug_message("OK: c2 (" + _test.c2_info + ")");
+} else {
+	show_debug_message("FAIL: c2");
+}
+
+_test = test_future_any;
+
+show_debug_message("");
+show_debug_message(_test.name);
+if (_test.finished_a) {
+	show_debug_message("OK: a");
+} else {
+	show_debug_message("FAIL: a");
+}
+if (_test.finished_b) {
+	show_debug_message("OK: b");
+} else {
+	show_debug_message("FAIL: b");
+}
+if (_test.finished_c) {
+	show_debug_message("OK: c");
+} else {
+	show_debug_message("FAIL: c");
+}
+if (_test.finished_d) {
+	show_debug_message("OK: d");
+} else {
+	show_debug_message("FAIL: d");
+}
+
+_test = test_future_race;
+
+show_debug_message("");
+show_debug_message(_test.name);
+if (_test.expected_a == _test.received_a) {
+	show_debug_message("OK: a equals");
+} else {
+	show_debug_message("FAIL: a not equals");
+}
+if (_test.expected_b == _test.received_b) {
+	show_debug_message("OK: b equals");
+} else {
+	show_debug_message("FAIL: b not equals");
+}
+if (_test.expected_c == _test.received_c) {
+	show_debug_message("OK: c equals");
+} else {
+	show_debug_message("FAIL: c not equals");
+}
+if (_test.finished_d) {
+	show_debug_message("OK: d finished (" + _test.finished_d_info + ")");
+} else {
+	show_debug_message("FAIL: d not finished");
+}
+
+_test = test_future_all_settled;
+
+show_debug_message("");
+show_debug_message(_test.name);
+if (_test.finished_a) {
+	show_debug_message("OK: a");
+} else {
+	show_debug_message("FAIL: a");
+}
+if (_test.finished_b) {
+	show_debug_message("OK: b");
+} else {
+	show_debug_message("FAIL: b");
+}
+if (_test.finished_c) {
+	show_debug_message("OK: c");
+} else {
+	show_debug_message("FAIL: c");
+}
+if (_test.finished_d) {
+	show_debug_message("OK: d");
+} else {
+	show_debug_message("FAIL: d");
+}

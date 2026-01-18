@@ -111,6 +111,57 @@ test_correct_chain = {
 	on_11_received: undefined,
 	on_11_received_later: undefined,
 }
+test_resolvers = {
+	name: "test_resolvers",
+	callable_resolve: undefined,
+	callable_reject: undefined,
+	resolve_expected: 1452,
+	resolve_received: undefined,
+	reject_expected: 247,
+	reject_received: undefined,
+}
+test_resolvers_2 = {
+	name: "test_resolvers_2",
+	callable_resolve: undefined,
+	callable_reject: undefined,
+	resolve_expected: 14528,
+	resolve_received: undefined,
+	reject_expected: 2478,
+	reject_received: undefined,
+}
+test_future_all = {
+	name: "test_future_all",
+	finished_a: false,
+	finished_b: false,
+	finished_c: false,
+	finished_c2: false,
+	c_info: undefined,
+	c2_info: undefined,
+}
+test_future_any = {
+	name: "test_future_any",
+	finished_a: false,
+	finished_b: false,
+	finished_c: false,
+	finished_d: false,
+}
+test_future_race = {
+	name: "test_future_race",
+	expected_a: 147,
+	received_a: undefined,
+	expected_b: 871,
+	received_b: undefined,
+	expected_c: 742,
+	received_c: undefined,
+	finished_d: false,
+}
+test_future_all_settled = {
+	name: "test_future_all_settled",
+	finished_a: false,
+	finished_b: false,
+	finished_c: false,
+	finished_d: false,
+}
 
 /// TESTS
 
@@ -551,6 +602,346 @@ function run_test_correct_chain() {
 	
 }
 
+function run_test_resolvers() {
+	
+	var _context;
+	var _future;
+	var _timesource;
+	var _timesource_context;
+	
+	_context = {};
+	_future = future(method(_context, function(_resolve, _reject) {
+		self.resolve = _resolve;
+		self.reject = _reject;
+	}));
+	
+	obj_future_test.test_resolvers.callable_resolve = is_callable(_context.resolve);
+	obj_future_test.test_resolvers.callable_reject = is_callable(_context.reject);
+	
+	_future.on_then(function(_value) {
+		obj_future_test.test_resolvers.resolve_received = _value;
+	});
+	_timesource_context = {
+		resolve: _context.resolve,
+	};
+	_timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_timesource_context, function() {
+		time_source_destroy(self.timesource);
+		self.resolve(1452);
+	}));
+	
+	_timesource_context.timesource = _timesource;
+	time_source_start(_timesource);
+	
+	_context = {};
+	_future = future(method(_context, function(_resolve, _reject) {
+		self.resolve = _resolve;
+		self.reject = _reject;
+	}));
+	
+	obj_future_test.test_resolvers.callable_resolve = is_callable(_context.resolve);
+	obj_future_test.test_resolvers.callable_reject = is_callable(_context.reject);
+	
+	_future.on_catch(function(_value) {
+		obj_future_test.test_resolvers.reject_received = _value;
+	});
+	_timesource_context = {
+		reject: _context.reject,
+	};
+	_timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_timesource_context, function() {
+		time_source_destroy(self.timesource);
+		self.reject(247);
+	}));
+	
+	_timesource_context.timesource = _timesource;
+	time_source_start(_timesource);
+	
+}
+
+function run_test_resolvers_2() {
+	var _context;
+	var _future;
+	var _timesource;
+	var _timesource_context;
+	
+	_context = future_with_resolvers();
+	_future = _context.future;
+	
+	obj_future_test.test_resolvers_2.callable_resolve = is_callable(_context.resolve);
+	obj_future_test.test_resolvers_2.callable_reject = is_callable(_context.reject);
+	
+	_future.on_then(function(_value) {
+		obj_future_test.test_resolvers_2.resolve_received = _value;
+	});
+	_timesource_context = {
+		resolve: _context.resolve,
+	};
+	_timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_timesource_context, function() {
+		time_source_destroy(self.timesource);
+		self.resolve(14528);
+	}));
+	
+	_timesource_context.timesource = _timesource;
+	time_source_start(_timesource);
+	
+	_context = future_with_resolvers();
+	_future = _context.future;
+	
+	obj_future_test.test_resolvers_2.callable_resolve = is_callable(_context.resolve);
+	obj_future_test.test_resolvers_2.callable_reject = is_callable(_context.reject);
+	
+	_future.on_catch(function(_value) {
+		obj_future_test.test_resolvers_2.reject_received = _value;
+	});
+	_timesource_context = {
+		reject: _context.reject,
+	};
+	_timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_timesource_context, function() {
+		time_source_destroy(self.timesource);
+		self.reject(2478);
+	}));
+	
+	_timesource_context.timesource = _timesource;
+	time_source_start(_timesource);
+}
+
+function run_test_future_all() {
+	
+	future_all([])
+		.on_then(function(_values) {
+			if (is_array(_values) and array_length(_values) == 0) {
+				obj_future_test.test_future_all.finished_a = true;
+			}
+		})
+	
+	future_all([
+		future_resolve("1"),
+		future_resolve("2"),
+		future_resolve("3"),
+	]).on_then(function(_values) {
+		if (
+			is_array(_values) and 
+			array_length(_values) == 3 and
+			array_get(_values, 0) == "1" and
+			array_get(_values, 1) == "2" and
+			array_get(_values, 2) == "3"
+		) {
+			obj_future_test.test_future_all.finished_b = true;
+		}
+	})
+	
+	future_all(([
+		future_resolve("1"),
+		future_reject("error 1"),
+		future_resolve("3"),
+		future_resolve("4"),
+		future_reject("error 2")
+	])).on_catch(function(_error) {
+		if (_error == "error 1" || _error == "error 2") {
+			obj_future_test.test_future_all.finished_c = true;
+			obj_future_test.test_future_all.c_info = _error;
+		}
+	})
+	
+	future_all(([
+		future_resolve("1"),
+		future_reject("error 2"),
+		future_resolve("3"),
+		future_resolve("4"),
+		future_reject("error 1")
+	])).on_catch(function(_error) {
+		if (_error == "error 1" || _error == "error 2") {
+			obj_future_test.test_future_all.finished_c2 = true;
+			obj_future_test.test_future_all.c2_info = _error;
+		}
+	})
+	
+}
+
+function run_test_future_any() {
+	
+	future_any([])
+		.on_catch(function(_values) {
+			if (is_array(_values) and array_length(_values) == 0) {
+				obj_future_test.test_future_any.finished_a = true;
+			}
+		})
+	
+	future_any(([
+		future_resolve("1"),
+		future_resolve("2"),
+		future_resolve("3"),
+	])).on_then(function(_value) {
+		if (_value == "1" || _value == "2" || _value == "3") {
+			obj_future_test.test_future_any.finished_b = true;
+		}
+	})
+	
+	future_any(([
+		future_reject("error 1"),
+		future_resolve("1"),
+		future_reject("error 2"),
+		future_resolve("3"),
+		future_resolve("4")
+	])).on_then(function(_value) {
+		if (_value == "1" || _value == "3" || _value == "4") {
+			obj_future_test.test_future_any.finished_c = true;
+		}
+	})
+	
+	future_any([
+		future_reject("1"),
+		future_reject("2"),
+		future_reject("3"),
+	]).on_catch(function(_values) {
+		if (
+			is_array(_values) and 
+			array_length(_values) == 3 and
+			array_get(_values, 0) == "1" and
+			array_get(_values, 1) == "2" and
+			array_get(_values, 2) == "3"
+		) {
+			obj_future_test.test_future_any.finished_d = true;
+		}
+	})
+	
+	
+}
+
+function run_test_future_race() {
+	
+	var _a1 = future_with_resolvers();
+	var _a2 = future_with_resolvers();
+	
+	future_race([
+		_a1.future,
+		_a2.future,
+	]).on_then(function(_value) {
+		obj_future_test.test_future_race.received_a = _value;
+	});
+	
+	_a1.resolve(147);
+	
+	var _b1 = future_with_resolvers();
+	var _b2 = future_with_resolvers();
+	
+	future_race([
+		_b1.future,
+		_b2.future,
+	]).on_catch(function(_value) {
+		obj_future_test.test_future_race.received_b = _value;
+	});
+	
+	_b2.reject(871);
+	
+	var _c1 = future_with_resolvers();
+	var _c2 = future_with_resolvers();
+	
+	future_race([
+		_c1.future,
+		_c2.future,
+	]).on_then(function(_value) {
+		obj_future_test.test_future_race.received_c = _value;
+	});
+	
+	_c1.resolve(742);
+	
+	var _d1 = future_with_resolvers();
+	var _d2 = future_with_resolvers();
+	
+	future_race([
+		_d1.future,
+		_d2.future,
+	]).on_then(function(_value) {
+		if (_value == "left" || _value == "right") {
+			obj_future_test.test_future_race.finished_d = true;
+			obj_future_test.test_future_race.finished_d_info = _value;
+		}
+	});
+	
+	_d1.resolve("left");
+	_d2.resolve("right");
+	
+}
+
+function run_test_future_all_settled() {
+	
+	future_all_settled([])
+		.on_then(function(_values) {
+			if (is_array(_values) and array_length(_values) == 0) {
+				obj_future_test.test_future_all_settled.finished_a = true;
+			}
+		})
+	
+	future_all_settled([
+		future_resolve("1"),
+		future_resolve("2"),
+		future_resolve("3"),
+	]).on_then(function(_values) {
+		if (
+			is_array(_values) and 
+			array_length(_values) == 3 and
+			array_get(_values, 0).is_resolved == true and
+			array_get(_values, 0).result == "1" and
+			array_get(_values, 1).is_resolved == true and
+			array_get(_values, 1).result == "2" and
+			array_get(_values, 2).is_resolved == true and
+			array_get(_values, 2).result == "3"
+		) {
+			obj_future_test.test_future_all_settled.finished_b = true;
+		}
+	})
+	
+	future_all_settled(([
+		future_resolve("1"),
+		future_reject("error 1"),
+		future_resolve("3"),
+		future_resolve("4"),
+		future_reject("error 2")
+	])).on_then(function(_values) {
+		if (
+			is_array(_values) and 
+			array_length(_values) == 5 and
+			array_get(_values, 0).is_resolved == true and
+			array_get(_values, 0).result == "1" and
+			array_get(_values, 1).is_resolved == false and
+			array_get(_values, 1).result == "error 1" and
+			array_get(_values, 2).is_resolved == true and
+			array_get(_values, 2).result == "3" and
+			array_get(_values, 3).is_resolved == true and
+			array_get(_values, 3).result == "4" and
+			array_get(_values, 4).is_resolved == false and
+			array_get(_values, 4).result == "error 2"
+		) {
+			obj_future_test.test_future_all_settled.finished_c = true;
+		}
+	})
+	
+	future_all_settled(([
+		future_resolve("1"),
+		future_reject("error 2"),
+		future_resolve("4"),
+		future_reject("error 1")
+	])).on_then(function(_values) {
+		if (
+			is_array(_values) and 
+			array_length(_values) == 4 and
+			array_get(_values, 0).is_resolved == true and
+			array_get(_values, 0).result == "1" and
+			array_get(_values, 1).is_resolved == false and
+			array_get(_values, 1).result == "error 2" and
+			array_get(_values, 2).is_resolved == true and
+			array_get(_values, 2).result == "4" and
+			array_get(_values, 3).is_resolved == false and
+			array_get(_values, 3).result == "error 1"
+		) {
+			obj_future_test.test_future_all_settled.finished_d = true;
+		}
+	})
+	
+	
+}
+
+
 /// RUN
 
 future_set_uncaught_handler(function(_maybe_callable) {
@@ -577,6 +968,12 @@ run_test_finally_after_reject();
 run_test_later_dobule_resolve();
 run_test_later_dobule_reject();
 run_test_correct_chain();
+run_test_resolvers();
+run_test_resolvers_2();
+run_test_future_all();
+run_test_future_any();
+run_test_future_race();
+run_test_future_all_settled();
 
 var _secs = 10;
 alarm_set(0, game_get_speed(gamespeed_fps) * _secs);
