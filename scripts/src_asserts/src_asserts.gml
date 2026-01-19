@@ -53,7 +53,7 @@ function __assert_type_factory(_type, _message=undefined) {
 function assert_type_bool(_message=undefined) {
 	if (ASSERTS_ENABLE) {
 		
-		return __assert_type_factory("bool", _value, _message);
+		return __assert_type_factory("bool", _message);
 		
 	}
 }
@@ -61,7 +61,7 @@ function assert_type_bool(_message=undefined) {
 function assert_type_string(_message=undefined) {
 	if (ASSERTS_ENABLE) {
 		
-		return __assert_type_factory("string", _value, _message);
+		return __assert_type_factory("string", _message);
 		
 	}
 }
