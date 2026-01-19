@@ -1,5 +1,5 @@
 
-function uuid() {
+function uuidv4() {
 	static _array = array_create(16);
 	static _buffer = buffer_create(32, buffer_fixed, 1);
 	static _string = "0123456789abcdef";
