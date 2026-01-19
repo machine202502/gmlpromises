@@ -1,7 +1,7 @@
 
 /* You need control memory leak */
 
-function EventEmitter() constructor {
+function Eventor() constructor {
 	
 	#region __constructor
 	{

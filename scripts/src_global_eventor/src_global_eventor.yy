@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"src_global_event_emitter",
+  "%Name":"src_global_eventor",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"src_global_event_emitter",
+  "name":"src_global_eventor",
   "parent":{
     "name":"utils",
     "path":"folders/utils.yy",

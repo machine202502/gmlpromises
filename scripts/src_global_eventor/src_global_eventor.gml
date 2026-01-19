@@ -1,5 +1,5 @@
 
-function __GlobalEventEmitterMemory() {
+function __GlobalEventorMemory() {
 	
 	static _memory = {};
 	return _memory
@@ -8,16 +8,16 @@ function __GlobalEventEmitterMemory() {
 
 /// @param {String} [_name]
 /// @return {Struct.EventEmitter}
-function GlobalEventEmitter(_name = "default") {
+function GlobalEventor(_name = "default") {
 	
-	static _memory = __GlobalEventEmitterMemory()
+	static _memory = __GlobalEventorMemory()
 	
 	var _emitter = struct_get(_memory, _name);
 	if (is_struct(_emitter)) {
 		return _emitter;
 	}
 	
-	_emitter = new EventEmitter();
+	_emitter = new Eventor();
 	struct_set(_memory, _name, _emitter);
 	
 	return _emitter;
