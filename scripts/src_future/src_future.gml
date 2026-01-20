@@ -158,8 +158,6 @@ function __Future(_handler_init) constructor {
 	}
 	
 	function __subscribe(_callback_subscription) {
-		static _future_memory = __FutureMemory();
-		
 		if (ASSERTS_ENABLE) assert(_callback_subscription, [
 			assert_is_callable("[__Future.__subscribe] callback_subscription should be callable")
 		]);
@@ -171,6 +169,8 @@ function __Future(_handler_init) constructor {
 			}
 			
 		}
+		
+		static _future_memory = __FutureMemory();
 		
 		var _future = self;
 		var _event = {
@@ -414,7 +414,7 @@ function future_all(_futures) {
 		return future_resolve([]);
 	}
 	
-	var _clone_array = extend_array_clone_shallow(_futures);
+	var _clone_array = array_clone_shallow(_futures);
 	var _context = {
 		size: _futures_size,
 		futures: _clone_array,
@@ -485,7 +485,7 @@ function future_any(_futures) {
 		return future_reject([]);
 	}
 	
-	var _clone_array = extend_array_clone_shallow(_futures);
+	var _clone_array = array_clone_shallow(_futures);
 	var _context = {
 		size: _futures_size,
 		futures: _clone_array,
@@ -552,7 +552,7 @@ function future_race(_futures) {
 		),
 	], "[future_race] futures should be array with futures");
 	
-	var _clone_array = extend_array_clone_shallow(_futures);
+	var _clone_array = array_clone_shallow(_futures);
 	var _context = {
 		futures: _clone_array,
 	};
@@ -602,7 +602,7 @@ function future_all_settled(_futures) {
 		return future_resolve([]);
 	}
 	
-	var _clone_array = extend_array_clone_shallow(_futures);
+	var _clone_array = array_clone_shallow(_futures);
 	var _context = {
 		size: _futures_size,
 		futures: _clone_array,

@@ -476,3 +476,14 @@ if (_test.finished_d) {
 } else {
 	show_debug_message("FAIL: d");
 }
+
+_test = test_order;
+
+show_debug_message("");
+show_debug_message(_test.name);
+if (_test.is_finished) {
+	show_debug_message("OK: order");
+} else {
+	show_debug_message("FAIL: order");
+}
+

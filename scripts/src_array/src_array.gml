@@ -1,5 +1,5 @@
 
-function extend_array_clone_shallow(_array) {
+function array_clone_shallow(_array) {
 	var _length = array_length(_array);
 	var _clone = array_create(_length);
 	
@@ -7,7 +7,7 @@ function extend_array_clone_shallow(_array) {
 	return _clone;
 }
 
-function extend_array_join(_array, _separator=",") {
+function array_join(_array, _separator=",") {
 	var _array_size = array_length(_array);
 	var _value;
 	var _result = "";

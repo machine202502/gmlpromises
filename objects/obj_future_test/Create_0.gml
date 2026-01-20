@@ -177,8 +177,39 @@ test_future_all_settled = {
 	finished_c: false,
 	finished_d: false,
 }
+test_order = {
+	name: "test_order",
+	expected_order: [ 101, 103, 202, 204, 105, 206 ],
+	received_order: [],
+	is_finished: false,
+}
 
 /// TESTS
+
+function set_frameout(_frames, _callback, _data=undefined) {
+	var _context = {
+		callback: _callback,
+		data: _data,
+	};
+	var _timesource = time_source_create(time_source_game, _frames, time_source_units_frames, method(_context, function() {
+		time_source_destroy(self.timesource);
+			
+		var _callback = self.callback;
+		var _data = self.data;
+		
+		self.callback = undefined;
+		self.data = undefined;
+		
+		try {
+			_callback(_data);
+		} catch (_error) {
+			show_message(_error);
+		}
+	}));
+		
+	_context.timesource = _timesource;
+ 	time_source_start(_timesource);
+}
 
 function run_test_resolve() {
 	
@@ -201,40 +232,30 @@ function run_test_reject() {
 function run_test_later_resolve() {
 	
 	var _future = future_resolve(80);
-	var _context = {
-		future: _future,	
-	};
-	var _timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_context, function() {
-		time_source_destroy(self.timesource);
-			
-		self.future.on_then(function(_value) {
+	
+	obj_future_test.set_frameout(100, function(_future) {
+		
+		_future.on_then(function(_value) {
 			obj_future_test.test_later_resolve.is_finished = true;
 			obj_future_test.test_later_resolve.received = _value;
 		});
-	}));
 		
-	_context.timesource = _timesource;
-	time_source_start(_timesource);
+	}, _future);
 	
 }
 
 function run_test_later_reject() {
 	
 	var _future = future_reject(25);
-	var _context = {
-		future: _future,	
-	};
-	var _timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_context, function() {
-		time_source_destroy(self.timesource);
-			
-		self.future.on_catch(function(_value) {
+	
+	obj_future_test.set_frameout(100, function(_future) {
+		
+		_future.on_catch(function(_value) {
 			obj_future_test.test_later_reject.is_finished = true;
 			obj_future_test.test_later_reject.received = _value;
-		});
-	}));
+		})
 		
-	_context.timesource = _timesource;
-	time_source_start(_timesource);
+	}, _future);
 	
 }
 
@@ -286,18 +307,12 @@ function run_test_uncaught_handler_4() {
 	
 	_future
 		.on_finally(functor_void);
-	
-	var _context = {
-		future: _future,	
-	};
-	var _timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_context, function() {
-		time_source_destroy(self.timesource);
 		
-		self.future.on_finally(functor_void);
-	}));
+	obj_future_test.set_frameout(100, function(_future) {
 		
-	_context.timesource = _timesource;
-	time_source_start(_timesource);
+		_future.on_finally(functor_void);
+		
+	}, _future);
 	
 }
 
@@ -404,68 +419,46 @@ function run_test_finally_after_reject() {
 function run_test_later_dobule_resolve() {
 	
 	var _future = future_resolve(60);
-	var _context_a = {
-		future: _future,	
-	};
-	var _timesource_a = time_source_create(time_source_game, 100, time_source_units_frames, method(_context_a, function() {
-		time_source_destroy(self.timesource);
-			
-		self.future.on_then(function(_value) {
+	
+	obj_future_test.set_frameout(100, function(_future) {
+		
+		_future.on_then(function(_value) {
 			obj_future_test.test_later_dobule_resolve.received += _value;
 		});
-	}));
+		
+	}, _future);
 	
-	_context_a.timesource = _timesource_a;
-	time_source_start(_timesource_a);
-	
-	var _context_b = {
-		future: _future,	
-	};
-	var _timesource_b = time_source_create(time_source_game, 180, time_source_units_frames, method(_context_b, function() {
-		time_source_destroy(self.timesource);
-			
-		self.future.on_then(function(_value) {
+	obj_future_test.set_frameout(180, function(_future) {
+		
+		_future.on_then(function(_value) {
 			obj_future_test.test_later_dobule_resolve.is_finished = true;
 			obj_future_test.test_later_dobule_resolve.received += _value;
 		});
-	}));
-	
-	_context_b.timesource = _timesource_b;
-	time_source_start(_timesource_b);
+		
+	}, _future);
 	
 }
 
 function run_test_later_dobule_reject() {
 	
 	var _future = future_reject(120);
-	var _context_a = {
-		future: _future,	
-	};
-	var _timesource_a = time_source_create(time_source_game, 100, time_source_units_frames, method(_context_a, function() {
-		time_source_destroy(self.timesource);
-			
-		self.future.on_catch(function(_value) {
+	
+	obj_future_test.set_frameout(100, function(_future) {
+		
+		_future.on_catch(function(_value) {
 			obj_future_test.test_later_dobule_reject.received += _value;
 		});
-	}));
+		
+	}, _future);
 	
-	_context_a.timesource = _timesource_a;
-	time_source_start(_timesource_a);
-	
-	var _context_b = {
-		future: _future,	
-	};
-	var _timesource_b = time_source_create(time_source_game, 180, time_source_units_frames, method(_context_b, function() {
-		time_source_destroy(self.timesource);
-			
-		self.future.on_catch(function(_value) {
+	obj_future_test.set_frameout(180, function(_future) {
+		
+		_future.on_catch(function(_value) {
 			obj_future_test.test_later_dobule_reject.is_finished = true;
 			obj_future_test.test_later_dobule_reject.received += _value;
 		});
-	}));
-	
-	_context_b.timesource = _timesource_b;
-	time_source_start(_timesource_b);
+		
+	}, _future);
 	
 }
 
@@ -523,17 +516,12 @@ function run_test_correct_chain() {
 		var _timeout_future = future(method(_context, function(_resolve) {
 			var _value = self.value;
 			var _context = {
-				value: self.value,
-				resolve: _resolve,
+				value: _value,
+				resolve: _resolve
 			};
-			var _timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_context, function() {
-				time_source_destroy(self.timesource);
-				self.resolve(self.value);
-			}));
-	
-			_context.timesource = _timesource;
-			time_source_start(_timesource);
-			
+			obj_future_test.set_frameout(100, function(_data) {
+				_data.resolve(_data.value);
+			}, _context);
 		}));
 		
 		return _timeout_future;
@@ -621,8 +609,6 @@ function run_test_resolvers() {
 	
 	var _context;
 	var _future;
-	var _timesource;
-	var _timesource_context;
 	
 	_context = {};
 	_future = future(method(_context, function(_resolve, _reject) {
@@ -636,16 +622,10 @@ function run_test_resolvers() {
 	_future.on_then(function(_value) {
 		obj_future_test.test_resolvers.resolve_received = _value;
 	});
-	_timesource_context = {
-		resolve: _context.resolve,
-	};
-	_timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_timesource_context, function() {
-		time_source_destroy(self.timesource);
-		self.resolve(1452);
-	}));
 	
-	_timesource_context.timesource = _timesource;
-	time_source_start(_timesource);
+	obj_future_test.set_frameout(100, function(_resolve) {
+		_resolve(1452);
+	}, _context.resolve);
 	
 	_context = {};
 	_future = future(method(_context, function(_resolve, _reject) {
@@ -659,24 +639,14 @@ function run_test_resolvers() {
 	_future.on_catch(function(_value) {
 		obj_future_test.test_resolvers.reject_received = _value;
 	});
-	_timesource_context = {
-		reject: _context.reject,
-	};
-	_timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_timesource_context, function() {
-		time_source_destroy(self.timesource);
-		self.reject(247);
-	}));
-	
-	_timesource_context.timesource = _timesource;
-	time_source_start(_timesource);
-	
+	obj_future_test.set_frameout(100, function(_reject) {
+		_reject(247);
+	}, _context.reject);
 }
 
 function run_test_resolvers_2() {
 	var _context;
 	var _future;
-	var _timesource;
-	var _timesource_context;
 	
 	_context = future_with_resolvers();
 	_future = _context.future;
@@ -687,16 +657,9 @@ function run_test_resolvers_2() {
 	_future.on_then(function(_value) {
 		obj_future_test.test_resolvers_2.resolve_received = _value;
 	});
-	_timesource_context = {
-		resolve: _context.resolve,
-	};
-	_timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_timesource_context, function() {
-		time_source_destroy(self.timesource);
-		self.resolve(14528);
-	}));
-	
-	_timesource_context.timesource = _timesource;
-	time_source_start(_timesource);
+	obj_future_test.set_frameout(100, function(_resolve) {
+		_resolve(14528);
+	}, _context.resolve);
 	
 	_context = future_with_resolvers();
 	_future = _context.future;
@@ -707,16 +670,10 @@ function run_test_resolvers_2() {
 	_future.on_catch(function(_value) {
 		obj_future_test.test_resolvers_2.reject_received = _value;
 	});
-	_timesource_context = {
-		reject: _context.reject,
-	};
-	_timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_timesource_context, function() {
-		time_source_destroy(self.timesource);
-		self.reject(2478);
-	}));
+	obj_future_test.set_frameout(100, function(_reject) {
+		_reject(2478);
+	}, _context.reject);
 	
-	_timesource_context.timesource = _timesource;
-	time_source_start(_timesource);
 }
 
 function run_test_future_all() {
@@ -845,20 +802,9 @@ function run_test_future_any() {
 	_e2.resolve("right");
 	_e1.resolve("left");
 	
-	var _context;
-	var _future;
-	var _timesource;
-	var _timesource_context;
-	
-	_timesource_context = {
-		e1: _e1.future,
-		e2: _e2.future,
-	};
-	_timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_timesource_context, function() {
-		time_source_destroy(self.timesource);
-		
-		var _e1 = self.e1;
-		var _e2 = self.e2;
+	obj_future_test.set_frameout(100, function(_data) {
+		var _e1 = _data.e1;
+		var _e2 = _data.e2;
 		
 		future_any([
 			_e1,
@@ -879,10 +825,10 @@ function run_test_future_any() {
 				obj_future_test.test_future_any.finished_e4_info = _value;
 			}
 		});
-	}));
-	
-	_timesource_context.timesource = _timesource;
-	time_source_start(_timesource);
+	}, {
+		e1: _e1.future,
+		e2: _e2.future,
+	});
 	
 }
 
@@ -950,20 +896,9 @@ function run_test_future_race() {
 	_d2.resolve("right");
 	_d1.resolve("left");
 	
-	var _context;
-	var _future;
-	var _timesource;
-	var _timesource_context;
-	
-	_timesource_context = {
-		d1: _d1.future,
-		d2: _d2.future,
-	};
-	_timesource = time_source_create(time_source_game, 100, time_source_units_frames, method(_timesource_context, function() {
-		time_source_destroy(self.timesource);
-		
-		var _d1 = self.d1;
-		var _d2 = self.d2;
+	obj_future_test.set_frameout(100, function(_data) {
+		var _d1 = _data.d1;
+		var _d2 = _data.d2;
 		
 		future_race([
 			_d1,
@@ -984,10 +919,10 @@ function run_test_future_race() {
 				obj_future_test.test_future_race.finished_g_info = _value;
 			}
 		});
-	}));
-	
-	_timesource_context.timesource = _timesource;
-	time_source_start(_timesource);
+	}, {
+		d1: _d1.future,
+		d2: _d2.future,
+	});
 	
 }
 
@@ -1069,6 +1004,55 @@ function run_test_future_all_settled() {
 	
 }
 
+function run_test_order() {
+	var _values = [];
+
+	var _f1 = future(function(_resolve, _reject) {
+	  _resolve(100);
+	});
+	var _f2 = future(function(_resolve, _reject) {
+	  set_frameout(150, _resolve, 200);
+	});
+
+	_f1.on_then(function (_result) {
+		array_push(obj_future_test.test_order.received_order, _result + 1);
+	});
+	_f2.on_then(function (_result) {
+	  array_push(obj_future_test.test_order.received_order, _result + 2);
+	});
+
+	set_frameout(100, function(_data) {
+	  _data.f1.on_then(function (_result) {
+	    array_push(obj_future_test.test_order.received_order, _result + 3);
+	  });
+	  _data.f2.on_then(function (_result) {
+	    array_push(obj_future_test.test_order.received_order, _result + 4);
+	  });
+	}, {
+		f1: _f1,
+		f2: _f2,
+	});
+
+	set_frameout(200, function(_data) {
+	  _data.f1.on_then(function (_result) {
+	    array_push(obj_future_test.test_order.received_order, _result + 5);
+	  });
+	  _data.f2.on_then(function (_result) {
+	    array_push(obj_future_test.test_order.received_order, _result + 6);
+	  });
+	}, {
+		f1: _f1,
+		f2: _f2,
+	});
+
+	set_frameout(300, function () {
+		if (array_equals(obj_future_test.test_order.received_order, obj_future_test.test_order.expected_order)) {
+			obj_future_test.test_order.is_finished = true;
+		}
+	});
+	
+}
+
 /// RUN
 
 future_set_uncaught_handler(function(_maybe_callable) {
@@ -1101,6 +1085,7 @@ run_test_future_all();
 run_test_future_any();
 run_test_future_race();
 run_test_future_all_settled();
+run_test_order();
 
 var _secs = 10;
 alarm_set(0, game_get_speed(gamespeed_fps) * _secs);
