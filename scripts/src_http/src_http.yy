@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"src_http",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"src_http",
+  "parent":{
+    "name":"utils",
+    "path":"folders/utils.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

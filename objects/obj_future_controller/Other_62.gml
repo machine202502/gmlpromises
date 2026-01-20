@@ -26,6 +26,9 @@ if (_status < 0) {
 	
 	return;
 }
+if (_status == 1) {
+	return;
+}
 
 _status_code = async_load[? "http_status"];
 _response_data = async_load[? "result"];

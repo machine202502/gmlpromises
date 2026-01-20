@@ -2,7 +2,7 @@
 function async_timeout(_ms, _data = undefined) {
 	if (ASSERTS_ENABLE) assert(_ms, [
 		assert_is_numeric("[async_timeout] ms should be number"),
-		assert_gte(0, "[async_timeout] ms should be 0 or more"),
+		assert_number_compare(">=", 0, "[async_timeout] ms should be 0 or more"),
 	]);
 	
 	var _context = {
@@ -38,7 +38,7 @@ function async_timeout(_ms, _data = undefined) {
 function async_frameout(_frames, _data = undefined) {
 	if (ASSERTS_ENABLE) assert(_frames, [
 		assert_is_numeric("[async_frameout] frames should be number"),
-		assert_gte(0, "[async_frameout] frames should be 0 or more"),
+		assert_number_compare(">=", 0, "[async_frameout] frames should be 0 or more"),
 	]);
 	
 	var _context = {

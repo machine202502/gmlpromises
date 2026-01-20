@@ -439,126 +439,6 @@ function assert_all_array_item(_callback_assert, _message=undefined) {
 	}
 }
 
-function assert_gt(_rval, _message=undefined) {
-	if (ASSERTS_ENABLE) {
-		
-		var _context = {
-			rval: _rval,
-			message: _message,
-		};
-		var _callback = method(_context, function(_lval) {
-			var _lval_is_gt_rval = _lval > self.rval;
-			
-			if (false == _lval_is_gt_rval) {
-				throw ({
-					message: self.message ?? "assert_gt", 
-					lval: _lval,
-					rval: self.rval,
-				});
-			}
-		});
-		
-		return _callback;
-		
-	}
-}
-
-function assert_gte(_rval, _message=undefined) {
-	if (ASSERTS_ENABLE) {
-		
-		var _context = {
-			rval: _rval,
-			message: _message,
-		};
-		var _callback = method(_context, function(_lval) {
-			var _lval_is_gte_rval = _lval >= self.rval;
-			
-			if (false == _lval_is_gte_rval) {
-				throw ({
-					message: self.message ?? "assert_gte", 
-					lval: _lval,
-					rval: self.rval,
-				});
-			}
-		});
-		
-		return _callback;
-		
-	}
-}
-
-function assert_lt(_rval, _message=undefined) {
-	if (ASSERTS_ENABLE) {
-		
-		var _context = {
-			rval: _rval,
-			message: _message,
-		};
-		var _callback = method(_context, function(_lval) {
-			var _lval_is_lt_rval = _lval < self.rval;
-			
-			if (false == _lval_is_lt_rval) {
-				throw ({
-					message: self.message ?? "assert_lt", 
-					lval: _lval,
-					rval: self.rval,
-				});
-			}
-		});
-		
-		return _callback;
-		
-	}
-}
-
-function assert_lte(_rval, _message=undefined) {
-	if (ASSERTS_ENABLE) {
-		
-		var _context = {
-			rval: _rval,
-			message: _message,
-		};
-		var _callback = method(_context, function(_lval) {
-			var _lval_is_lte_rval = _lval <= self.rval;
-			
-			if (false == _lval_is_lte_rval) {
-				throw ({
-					message: self.message ?? "assert_lte", 
-					lval: _lval,
-					rval: self.rval,
-				});
-			}
-		});
-		
-		return _callback;
-		
-	}
-}
-
-function assert_eq(_rval, _message=undefined) {
-	if (ASSERTS_ENABLE) {
-		
-		var _context = {
-			rval: _rval,
-			message: _message,
-		};
-		var _callback = method(_context, function(_lval) {
-			var _lval_is_eq_rval = _lval == self.rval;
-			
-			if (false == _lval_is_eq_rval) {
-				throw ({
-					message: self.message ?? "assert_eq", 
-					lval: _lval,
-					rval: self.rval,
-				});
-			}
-		});
-		
-		return _callback;
-		
-	}
-}
-
 function assert_in(_values, _message=undefined) {
 	if (ASSERTS_ENABLE) {
 		
@@ -633,6 +513,149 @@ function assert_buffer_exists(_message=undefined) {
 			if (false == buffer_exists(_value)) {
 				throw ({
 					message: self.message ?? "assert_buffer_exists", 
+				});
+			}
+		});
+		
+		return _callback;
+		
+	}
+}
+
+function assert_string_length_compare(_operator, _rval, _message=undefined) {
+	if (ASSERTS_ENABLE) {
+		
+		if (false == array_contains(["==", ">=", "<=", "<", ">", "!="], _operator)) {
+			throw ({
+				message: "ASSERTS_BAD_CONTSUCTOR_ARGUMENTS",
+			});
+		}
+		
+		var _context = {
+			rval: _rval,
+			operator: _operator,
+			message: _message,
+		};
+		var _callback = method(_context, function(_string) {
+			var _operator = self.operator;
+			var _rval = self.rval;
+			var _lval = string_length(_string);
+			var _operator_compared_result;
+			
+			if (_operator == "==") {
+				_operator_compared_result = _lval == _rval;
+			} else if (_operator == ">=") {
+				_operator_compared_result = _lval >= _rval;
+			} else if (_operator == "<=") {
+				_operator_compared_result = _lval <= _rval;
+			} else if (_operator == ">") {
+				_operator_compared_result = _lval > _rval;
+			} else if (_operator == "<") {
+				_operator_compared_result = _lval < _rval;
+			} else if (_operator == "!=") {
+				_operator_compared_result = _lval != _rval;
+			}
+			
+			if (false == _operator_compared_result) {
+				throw ({
+					message: self.message ?? "assert_string_length_compare", 
+					rval: self.rval,
+					length: _lval,
+				});
+			}
+		});
+		
+		return _callback;
+		
+	}
+}
+
+function assert_array_length_compare(_operator, _rval, _message=undefined) {
+	if (ASSERTS_ENABLE) {
+		
+		if (false == array_contains(["==", ">=", "<=", "<", ">", "!="], _operator)) {
+			throw ({
+				message: "ASSERTS_BAD_CONTSUCTOR_ARGUMENTS",
+			});
+		}
+		
+		var _context = {
+			rval: _rval,
+			operator: _operator,
+			message: _message,
+		};
+		var _callback = method(_context, function(_array) {
+			var _operator = self.operator;
+			var _rval = self.rval;
+			var _lval = array_length(_array);
+			var _operator_compared_result;
+			
+			if (_operator == "==") {
+				_operator_compared_result = _lval == _rval;
+			} else if (_operator == ">=") {
+				_operator_compared_result = _lval >= _rval;
+			} else if (_operator == "<=") {
+				_operator_compared_result = _lval <= _rval;
+			} else if (_operator == ">") {
+				_operator_compared_result = _lval > _rval;
+			} else if (_operator == "<") {
+				_operator_compared_result = _lval < _rval;
+			} else if (_operator == "!=") {
+				_operator_compared_result = _lval != _rval;
+			}
+			
+			if (false == _operator_compared_result) {
+				throw ({
+					message: self.message ?? "assert_array_size_compare", 
+					rval: self.rval,
+					length: _lval,
+				});
+			}
+		});
+		
+		return _callback;
+		
+	}
+}
+
+function assert_number_compare(_operator, _rval, _message=undefined) {
+	if (ASSERTS_ENABLE) {
+		
+		if (false == array_contains(["==", ">=", "<=", "<", ">", "!="], _operator)) {
+			throw ({
+				message: "ASSERTS_BAD_CONTSUCTOR_ARGUMENTS",
+			});
+		}
+		
+		var _context = {
+			rval: _rval,
+			operator: _operator,
+			message: _message,
+		};
+		var _callback = method(_context, function(_lval) {
+			var _operator = self.operator;
+			var _rval = self.rval;
+			var _operator_compared_result;
+			
+			if (_operator == "==") {
+				_operator_compared_result = _lval == _rval;
+			} else if (_operator == ">=") {
+				_operator_compared_result = _lval >= _rval;
+			} else if (_operator == "<=") {
+				_operator_compared_result = _lval <= _rval;
+			} else if (_operator == ">") {
+				_operator_compared_result = _lval > _rval;
+			} else if (_operator == "<") {
+				_operator_compared_result = _lval < _rval;
+			} else if (_operator == "!=") {
+				_operator_compared_result = _lval != _rval;
+			}
+			
+			if (false == _operator_compared_result) {
+				throw ({
+					message: self.message ?? "assert_number_compare", 
+					rval: self.rval,
+					lval: _lval,
 				});
 			}
 		});

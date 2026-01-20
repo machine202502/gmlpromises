@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"src_env",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"src_env",
+  "parent":{
+    "name":"env",
+    "path":"folders/env.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
