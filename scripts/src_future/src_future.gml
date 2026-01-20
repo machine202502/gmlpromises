@@ -43,7 +43,7 @@ function __Future(_handler_init) constructor {
 		self.__status = __FUTURE_STATUS.PENDING;
 		self.__handler_init = _handler_init
 		self.__response_result = undefined;
-		self.__has_ever_subscribed = false;
+		self.__never_subscribed = true;
 		self.__finished_without_subscriptions = false;
 		self.__postponed_events = [];
 		
@@ -147,11 +147,11 @@ function __Future(_handler_init) constructor {
 	function __end() {
 		var _result = self.__response_result;
 		var _is_rejected = self.__status == __FUTURE_STATUS.REJECTED;
-		var _has_never_subscribed = self.__has_ever_subscribed == false;
+		var _never_subscribed = self.__never_subscribed;
 		
-		self.__finished_without_subscriptions = _has_never_subscribed;
+		self.__finished_without_subscriptions = _never_subscribed;
 		
-		if (_has_never_subscribed and _is_rejected) {
+		if (_is_rejected and _never_subscribed) {
 			throw _result;
 		}
 	}
@@ -171,7 +171,7 @@ function __Future(_handler_init) constructor {
 		
 		static _future_memory = __FutureMemory();
 		
-		self.__has_ever_subscribed = true;
+		self.__never_subscribed = false;
 		
 		var _is_finished =
 			self.__status == __FUTURE_STATUS.RESOLVED or self.__status == __FUTURE_STATUS.REJECTED;
