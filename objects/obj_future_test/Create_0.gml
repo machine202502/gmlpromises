@@ -180,9 +180,10 @@ test_future_all_settled = {
 test_order = {
 	name: "test_order",
 	expected_order: [
-	    101, 103, 114,
-	    202, 204, 213,
-	    105, 206
+	  101, 103, 114, 202, 204, 213,
+	  105, 206,  40,  50,  70,  60,
+	   90,  80,  54,  44,  64,  74,
+	   94,  84
 	],
 	received_order: [],
 	is_finished: false,
@@ -1054,10 +1055,70 @@ function run_test_order() {
 		f1: _f1,
 		f2: _f2,
 	});
+	
+	set_frameout(250, function(_f1) {
+		var _fa = future_with_resolvers();
+		var _fb = future_with_resolvers();
+		var _fc = future_with_resolvers();
+
+		_fa.resolve();
+		_f1.on_then(function () {
+			array_push(obj_future_test.test_order.received_order, 40);
+		});
+		_fa.future.on_then(function () {
+			array_push(obj_future_test.test_order.received_order, 50);
+		});
+
+		_f1.on_then(function () {
+			array_push(obj_future_test.test_order.received_order, 70);
+		});
+		_fb.resolve();
+		_fb.future.on_then(function () {
+			array_push(obj_future_test.test_order.received_order, 60);
+		});
+
+		_f1.on_then(function () {
+			array_push(obj_future_test.test_order.received_order, 90);
+		});
+		_fc.future.on_then(function () {
+			array_push(obj_future_test.test_order.received_order, 80);
+		});
+		_fc.resolve();
+
+		var _fa2 = future_with_resolvers();
+		var _fb2 = future_with_resolvers();
+		var _fc2 = future_with_resolvers();
+
+		_fa2.resolve();
+		_fa2.future.on_then(function () {
+			array_push(obj_future_test.test_order.received_order, 54);
+		});
+		_f1.on_then(function () {
+			array_push(obj_future_test.test_order.received_order, 44);
+		});
+
+		_fb2.future.on_then(function () {
+			array_push(obj_future_test.test_order.received_order, 64);
+		});
+		_fb2.resolve();
+		_f1.on_then(function () {
+			array_push(obj_future_test.test_order.received_order, 74);
+		});
+
+		_fc2.future.on_then(function () {
+			array_push(obj_future_test.test_order.received_order, 84);
+		});
+		_f1.on_then(function () {
+			array_push(obj_future_test.test_order.received_order, 94);
+		});
+		_fc2.resolve();
+	}, _f1);
 
 	set_frameout(300, function () {
 		if (array_equals(obj_future_test.test_order.received_order, obj_future_test.test_order.expected_order)) {
 			obj_future_test.test_order.is_finished = true;
+		} else {
+			show_message(obj_future_test.test_order.received_order)
 		}
 	});
 	

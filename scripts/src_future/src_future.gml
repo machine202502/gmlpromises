@@ -3,9 +3,7 @@
 
 enum __FUTURE_STATUS {
 	PENDING = 0,
-	RESOLVING = 1,
-	REJECTING = 2,
-	INACTION = 3,
+	HANDLING = 1,
 	RESOLVED = 10,
 	REJECTED = 11,
 }
@@ -17,8 +15,8 @@ function __FutureMemory() {
 		var _ds_map_async_http = ds_map_create();
 		var _ds_map_headers = ds_map_create();
 		var _memory = {
-			queue_finishing: [],
-			queue_finishing_swap: [],
+			queue_end: [],
+			queue_end_swap: [],
 			queue_notifications: [],
 			queue_notifications_swap: [],
 			uncaught_handler: undefined,
@@ -45,64 +43,13 @@ function __Future(_handler_init) constructor {
 		self.__status = __FUTURE_STATUS.PENDING;
 		self.__handler_init = _handler_init
 		self.__response_result = undefined;
+		self.__has_ever_subscribed = false;
 		self.__finished_without_subscriptions = false;
 		self.__postponed_events = [];
 		
 		__start();
 	}
 	#endregion
-	
-	function __add_to_queue_finishing() {
-		static _future_memory = __FutureMemory();
-		
-		var _queue_finishing = _future_memory.queue_finishing;
-		array_push(_queue_finishing, self);
-		
-	}
-	
-	function __resolve(_resolved_data) {
-		var _is_handling = self.__status == __FUTURE_STATUS.PENDING;
-		
-		if (false == _is_handling) {
-			return;
-		}
-		
-		if (is_future(_resolved_data)) {
-			var _next_future = _resolved_data;
-			
-			self.__status = __FUTURE_STATUS.INACTION;
-			
-			_next_future.__subscribe(function(_is_resolved, _future_result) {
-				if (_is_resolved) {
-					self.__status = __FUTURE_STATUS.RESOLVING;
-					self.__response_result = _future_result;
-				} else {
-					self.__status = __FUTURE_STATUS.REJECTING;
-					self.__response_result = _future_result;
-				}
-				
-				__add_to_queue_finishing();
-			});
-		} else {
-			self.__status = __FUTURE_STATUS.RESOLVING;
-			self.__response_result = _resolved_data;
-			
-			__add_to_queue_finishing();
-		}
-	}
-	
-	function __reject(_rejected_data) {
-		var _is_handling = self.__status == __FUTURE_STATUS.PENDING;
-		
-		if (false == _is_handling) {
-			return;
-		}
-		
-		self.__status = __FUTURE_STATUS.REJECTING;
-		self.__response_result = _rejected_data;
-		
-		__add_to_queue_finishing();
-	}
 	
 	function __start() {
 		if (false == is_callable(self.__handler_init)) {
@@ -125,36 +72,88 @@ function __Future(_handler_init) constructor {
 		}
 	}
 	
-	function __finished() {
-		static _future_memory = __FutureMemory();
+	function __resolve(_resolved_data) {
+		var _is_pending = self.__status == __FUTURE_STATUS.PENDING;
 		
-		var _is_finishing =
-			self.__status == __FUTURE_STATUS.RESOLVING or self.__status == __FUTURE_STATUS.REJECTING;
-		
-		if (false == _is_finishing) {
+		if (false == _is_pending) {
 			return;
 		}
 		
-		if (self.__status == __FUTURE_STATUS.RESOLVING) {
+		self.__status = __FUTURE_STATUS.HANDLING;
+		
+		if (is_future(_resolved_data)) {
+			var _next_future = _resolved_data;
+			
+			_next_future.__subscribe(function(_is_resolved, _future_result) {
+				__handling(_is_resolved, _future_result);
+			});
+		} else {
+			__handling(true, _resolved_data);
+		}
+	}
+	
+	function __reject(_rejected_data) {
+		var _is_pending = self.__status == __FUTURE_STATUS.PENDING;
+		
+		if (false == _is_pending) {
+			return;
+		}
+		
+		self.__status = __FUTURE_STATUS.HANDLING;
+		
+		__handling(false, _rejected_data);
+	}
+	
+	function __handling(_is_resolved, _future_result) {
+		static _future_memory = __FutureMemory();
+		
+		var _is_handling =
+			self.__status == __FUTURE_STATUS.HANDLING;
+		
+		if (false == _is_handling) {
+			return;
+		}
+		
+		if (_is_resolved) {
 			self.__status = __FUTURE_STATUS.RESOLVED;
 		} else {
 			self.__status = __FUTURE_STATUS.REJECTED;
 		}
+		self.__response_result = _future_result;
 		
+		var _queue_end = _future_memory.queue_end;
 		var _queue_notifications = _future_memory.queue_notifications;
 		var _events = self.__postponed_events;
 		var _events_size = array_length(_events);
-		var i, _event;
+		var _future = self;
+		var i, _event, _notification;
 		
 		for (i = 0; i < _events_size; ++i) {
 			_event = array_get(_events, i);
-			array_push(_queue_notifications, _event);
+			_future = self;
+			_notification = {
+				is_resolved: _is_resolved,
+				result: _future_result,
+				callback_subscription: _event,
+			}
+			array_push(_queue_notifications, _notification);
 		}
 		
 		self.__postponed_events = undefined;
-		self.__finished_without_subscriptions = _events_size == 0;
 		
-		return self.__finished_without_subscriptions;
+		array_push(_queue_end, _future);
+	}
+	
+	function __end() {
+		var _result = self.__response_result;
+		var _is_rejected = self.__status == __FUTURE_STATUS.REJECTED;
+		var _has_never_subscribed = self.__has_ever_subscribed == false;
+		
+		self.__finished_without_subscriptions = _has_never_subscribed;
+		
+		if (_has_never_subscribed and _is_rejected) {
+			throw _result;
+		}
 	}
 	
 	function __subscribe(_callback_subscription) {
@@ -172,20 +171,23 @@ function __Future(_handler_init) constructor {
 		
 		static _future_memory = __FutureMemory();
 		
-		var _future = self;
-		var _event = {
-			future: _future,
-			callback_subscription: _callback_subscription,
-		};
+		self.__has_ever_subscribed = true;
 		
 		var _is_finished =
 			self.__status == __FUTURE_STATUS.RESOLVED or self.__status == __FUTURE_STATUS.REJECTED;
 			
 		if (_is_finished) {
 			var _queue_notifications = _future_memory.queue_notifications;
-			array_push(_queue_notifications, _event);
+			var _is_resolved = self.__status == __FUTURE_STATUS.RESOLVED;
+			var _result = self.__response_result;
+			var _notification = {
+				is_resolved: _is_resolved,
+				result: _result,
+				callback_subscription: _callback_subscription,
+			}
+			array_push(_queue_notifications, _notification);
 		} else {
-			array_push(self.__postponed_events, _event);
+			array_push(self.__postponed_events, _callback_subscription);
 		}
 		
 	}
@@ -309,47 +311,41 @@ function __future_loop() {
 	static _future_memory = __FutureMemory();
 	
 	var _uncaught_handler = _future_memory.uncaught_handler;
-	var _queue_finishing = _future_memory.queue_finishing;
-	var _queue_finishing_swap = _future_memory.queue_finishing_swap;
+	var _queue_end = _future_memory.queue_end;
+	var _queue_end_swap = _future_memory.queue_end_swap;
 	var _queue_notifications = _future_memory.queue_notifications;
 	var _queue_notifications_swap = _future_memory.queue_notifications_swap;
-	var _queue_finishing_size = array_length(_queue_finishing);
+	var _queue_end_size = array_length(_queue_end);
 	var _queue_notifications_size = array_length(_queue_notifications);
 	var _future;
-	var _finished_without_subscriptions, _rejecting_without_subscriptions;
-	var _notification;
-	var _callback_subscription;
-	var _is_resolved, _result;
+	var _notification, _is_resolved, _result, _callback_subscription;
 	var i;
 
-	_future_memory.queue_finishing = _queue_finishing_swap;
-	_future_memory.queue_finishing_swap = _queue_finishing;
+	_future_memory.queue_end = _queue_end_swap;
+	_future_memory.queue_end_swap = _queue_end;
 	_future_memory.queue_notifications = _queue_notifications_swap;
 	_future_memory.queue_notifications_swap = _queue_notifications;
-
-	for (i = 0; i < _queue_finishing_size; ++i) {
-		_future = array_get(_queue_finishing, i);
-		_finished_without_subscriptions = _future.__finished();
-		_is_resolved = _future.__is_resolved();
-		_result = _future.__get_result();
-		_rejecting_without_subscriptions = false == _is_resolved and _finished_without_subscriptions; 
 	
-		if (_rejecting_without_subscriptions) {
+	for (i = 0; i < _queue_end_size; ++i) { 
+		_future = array_get(_queue_end, i);
+		
+		try {
+			_future.__end();
+		} catch (_error) {
 			if (is_callable(_uncaught_handler)) {
-				_uncaught_handler(_result);
+				_uncaught_handler(_error);
 			} else {
-				throw _result;
+				throw _error;
 			}
 		}
 	}
-	array_resize(_queue_finishing, 0);
+	array_resize(_queue_end, 0);
 
 	for (i = 0; i < _queue_notifications_size; ++i) {
 		_notification = array_get(_queue_notifications, i);
-		_future = _notification.future;
+		_is_resolved = _notification.is_resolved;
+		_result = _notification.result;
 		_callback_subscription = _notification.callback_subscription;
-		_is_resolved = _future.__is_resolved();
-		_result = _future.__get_result();
 	
 		try {
 			_callback_subscription(_is_resolved, _result);
