@@ -179,7 +179,11 @@ test_future_all_settled = {
 }
 test_order = {
 	name: "test_order",
-	expected_order: [ 101, 103, 202, 204, 105, 206 ],
+	expected_order: [
+	    101, 103, 114,
+	    202, 204, 213,
+	    105, 206
+	],
 	received_order: [],
 	is_finished: false,
 }
@@ -1027,6 +1031,12 @@ function run_test_order() {
 	  });
 	  _data.f2.on_then(function (_result) {
 	    array_push(obj_future_test.test_order.received_order, _result + 4);
+	  });
+	  _data.f2.on_then(function (_result) {
+	    array_push(obj_future_test.test_order.received_order, _result + 13);
+	  });
+	  _data.f1.on_then(function (_result) {
+	    array_push(obj_future_test.test_order.received_order, _result + 14);
 	  });
 	}, {
 		f1: _f1,
