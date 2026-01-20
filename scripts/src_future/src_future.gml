@@ -149,9 +149,8 @@ function __Future(_handler_init) constructor {
 		var _is_rejected = self.__status == __FUTURE_STATUS.REJECTED;
 		var _never_subscribed = self.__never_subscribed;
 		
-		self.__finished_without_subscriptions = _never_subscribed;
-		
 		if (_is_rejected and _never_subscribed) {
+			self.__finished_without_subscriptions = true;
 			throw _result;
 		}
 	}
