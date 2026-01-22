@@ -44,7 +44,7 @@ function __Promise(_handler_init) constructor {
 		self.__handler_init = _handler_init
 		self.__response_result = undefined;
 		self.__never_subscribed = true;
-		self.__finished_without_subscriptions = false;
+		self.__rejected_without_subscriptions = false;
 		self.__postponed_events = [];
 		
 		__start();
@@ -149,7 +149,7 @@ function __Promise(_handler_init) constructor {
 		var _never_subscribed = self.__never_subscribed;
 		
 		if (_is_rejected and _never_subscribed) {
-			self.__finished_without_subscriptions = true;
+			self.__rejected_without_subscriptions = true;
 			throw _result;
 		}
 	}
@@ -161,7 +161,7 @@ function __Promise(_handler_init) constructor {
 		
 		if (PROMISE_ENABLE_WARN) {
 			
-			if (self.__finished_without_subscriptions) {
+			if (self.__rejected_without_subscriptions) {
 				show_debug_message("warn::[__Promise.__subscribe] subscribe on uncaught handled promise");
 			}
 			
