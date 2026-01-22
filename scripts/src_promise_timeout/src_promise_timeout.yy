@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"src_future_timeout",
+  "%Name":"src_promise_timeout",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"src_future_timeout",
+  "name":"src_promise_timeout",
   "parent":{
-    "name":"future",
-    "path":"folders/utils/future.yy",
+    "name":"promise",
+    "path":"folders/utils/promise.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

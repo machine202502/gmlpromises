@@ -1,7 +1,7 @@
 
 function __network_manager_async_http_request(_url, _method="get", _headers=undefined, _body=undefined) {
 	
-	var _future = async_http_request(_url, _method, _headers, _body)
+	var _promise = async_http_request(_url, _method, _headers, _body)
 		.on(function(_is_resolved, _result) {
 			var _status = _result.status_code;
 			var _json_string = _result.response;
@@ -16,7 +16,7 @@ function __network_manager_async_http_request(_url, _method="get", _headers=unde
 			}
 		})
 	
-	return _future;
+	return _promise;
 	
 }
 
@@ -26,7 +26,7 @@ function network_manager_ping() {
 		"ping"
 	);
 	
-	var _future = async_http_request(_url, "get")
+	var _promise = async_http_request(_url, "get")
 		.on_then(function(_result) {
 			if (_result.response == "pong") {
 				return true;
@@ -37,7 +37,7 @@ function network_manager_ping() {
 			});
 		});
 	
-	return _future;
+	return _promise;
 	
 }
 
@@ -66,7 +66,7 @@ function network_manager_settings(_keys=undefined) {
 		_url = _base_url + "?" + http_query_param("keys", _keys);
 	}
 	
-	var _future = __network_manager_async_http_request(_url, "get")
+	var _promise = __network_manager_async_http_request(_url, "get")
 		.on_then(function(_data) {
 			var _settings = _data.settings;
 			var _object = {};
@@ -79,7 +79,7 @@ function network_manager_settings(_keys=undefined) {
 			return _object;
 		});
 	
-	return _future;
+	return _promise;
 }
 
 function network_manager_setting(_key) {
@@ -95,14 +95,14 @@ function network_manager_setting(_key) {
 	
 	var _url = _base_url + "/" + _key;
 	
-	var _future = __network_manager_async_http_request(_url, "get")
+	var _promise = __network_manager_async_http_request(_url, "get")
 		.on_then(function(_data) {
 			var _setting = _data.setting;
 			var _parsed = __network_manager_setting_parse(_setting);
 			return _parsed.value;
 		});
 	
-	return _future;
+	return _promise;
 }
 
 function __network_manager_setting_parse(_setting) {

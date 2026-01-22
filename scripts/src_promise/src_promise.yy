@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"src_future",
+  "%Name":"src_promise",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"src_future",
+  "name":"src_promise",
   "parent":{
-    "name":"future",
-    "path":"folders/utils/future.yy",
+    "name":"promise",
+    "path":"folders/utils/promise.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

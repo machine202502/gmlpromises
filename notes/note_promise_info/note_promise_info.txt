@@ -1,0 +1,33 @@
+
+---------------------------------------------------------------------------------------
+| interface differences between JavaScript:                                           |
+|-------------------------------------------------------------------------------------|
+| nodejs                                      | gml                                   |
+|-------------------------------------------------------------------------------------|
+| new Promise(handler)                        | promise(handler)                      |
+| Promise.resolve(value)                      | promise_resolve(value)                |
+| Promise.reject(value)                       | promise_reject(value)                 |
+| .then(handler)                              | .on_then(value)                       |
+| .catch(handler)                             | .on_catch(value)                      |
+| .finally(handler)                           | .on_finally(value)                    |
+| Promise.all([...])                          | promise_all([...])                    |
+| Promise.any([...])                          | promise_any([...])                    |
+| Promise.race([...])                         | promise_race([...])                   |
+| Promise.allSettled([...])                   | promise_all_settled([...])            |
+| process.on('unhandledRejection', handler)   | promise_set_uncaught_handler(handler) |
+| Promise.withResolvers()                     | promise_with_resolvers()              |
+---------------------------------------------------------------------------------------
+| additional API / example API                                                        |
+|--------------------------------------------------------------------------------------
+| async_http_request | http request                                                   |
+| async_timeout      | timer on time_source_units_seconds                             |
+| async_frameout     | timer on time_source_units_frames                              |
+| .on                | on_then&on_catch = function(is_resolved: bool, result: any)    |
+---------------------------------------------------------------------------------------
+
+- Node.js and browsers use an internal task queue to process asynchronous operations.
+- In GML, similar behavior must be implemented manually.
+- Therefore, the __promise_loop method must be called to emulate Node.js–like queue 
+  processing.
+- Additionally, asynchronous GameMaker events (such as HTTP requests) must be manually 
+  wrapped in Promises and resolved explicitly

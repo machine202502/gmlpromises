@@ -1,0 +1,11 @@
+{
+  "$GMNotes":"v1",
+  "%Name":"note_promise_info",
+  "name":"note_promise_info",
+  "parent":{
+    "name":"promise",
+    "path":"folders/utils/promise.yy",
+  },
+  "resourceType":"GMNotes",
+  "resourceVersion":"2.0",
+}

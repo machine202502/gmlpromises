@@ -1,5 +1,5 @@
 
-function async_http_request(_url, _method="get", _headers=undefined, _body=undefined) {
+function async_http_request(_url, _method="get", _body=undefined, _headers=undefined) {
 	if (ASSERTS_ENABLE) assert(_url, [
 		assert_is_string("[async_http_request] url should be string"),
 	]);
@@ -9,12 +9,6 @@ function async_http_request(_url, _method="get", _headers=undefined, _body=undef
 			"GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "OPTIONS", "CONNECT",
 			"get", "head", "post", "put", "delete", "trace", "options", "connect"
 		], "[async_http_request] method must be one of: GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS, CONNECT"),
-	]);
-	if (ASSERTS_ENABLE) assert(_headers, [
-		assert_any([
-			assert_is_undefined(),
-			assert_is_struct(),
-		], "[async_http_request] headers should be void or json"),
 	]);
 	if (ASSERTS_ENABLE) assert(_body, [
 		assert_any([
@@ -27,6 +21,12 @@ function async_http_request(_url, _method="get", _headers=undefined, _body=undef
 			])
 		], "[async_http_request] body must be void, string, json, or buffer"),
 	]);
+	if (ASSERTS_ENABLE) assert(_headers, [
+		assert_any([
+			assert_is_undefined(),
+			assert_is_struct(),
+		], "[async_http_request] headers should be void or json"),
+	]);
 	
 	var _context = {
 		url: _url,
@@ -34,9 +34,9 @@ function async_http_request(_url, _method="get", _headers=undefined, _body=undef
 		headers: _headers,
 		body: _body,
 	};
-	var _future = future(method(_context, function(_resolve, _reject) {
-		static _ds_map_async_http = __FutureMemory().ds_map_async_http;
-		static _ds_map_headers = __FutureMemory().ds_map_headers;
+	var _promise = promise(method(_context, function(_resolve, _reject) {
+		static _ds_map_async_http = __PromiseMemory().ds_map_async_http;
+		static _ds_map_headers = __PromiseMemory().ds_map_headers;
 		
 		var _url = self.url;
 		var _method = self.method ?? "get";
@@ -61,15 +61,15 @@ function async_http_request(_url, _method="get", _headers=undefined, _body=undef
 			body: is_struct(_body) ? weak_ref_create(_body) : _body,
 		};
 	
-		ds_map_clear(_ds_map_headers);
-		
 		struct_foreach(_headers, function(_name, _value) {
-			static _ds_map_headers = __FutureMemory().ds_map_headers;
+			static _ds_map_headers = __PromiseMemory().ds_map_headers;
 			
 			ds_map_set(_ds_map_headers, _name, _value);
 		});
 		
 		_async_request_id = http_request(_url, _method, _ds_map_headers, _body);
+		
+		ds_map_clear(_ds_map_headers);
 		
 		if (_async_request_id == -1) {
 			throw ({
@@ -84,5 +84,5 @@ function async_http_request(_url, _method="get", _headers=undefined, _body=undef
 			reject: _reject,
 		});
 	}));
-	return _future;
+	return _promise;
 }

@@ -1,5 +1,5 @@
 
-function async_timeout(_ms, _data = undefined) {
+function async_timeout(_ms, _data=undefined) {
 	if (ASSERTS_ENABLE) assert(_ms, [
 		assert_is_numeric("[async_timeout] ms should be number"),
 		assert_number_compare(">=", 0, "[async_timeout] ms should be 0 or more"),
@@ -9,7 +9,7 @@ function async_timeout(_ms, _data = undefined) {
 		ms: _ms,
 		data: _data,
 	};
-	var _future = future(method(_context, function(_resolve, _reject) {
+	var _promise = promise(method(_context, function(_resolve, _reject) {
 		var _ms = self.ms;
 		var _data = self.data;
 		var _seconds = _ms / 1000;
@@ -32,10 +32,10 @@ function async_timeout(_ms, _data = undefined) {
 		_context.timesource = _timesource;
 		time_source_start(_timesource);
 	}));
-	return _future;
+	return _promise;
 }
 
-function async_frameout(_frames, _data = undefined) {
+function async_frameout(_frames, _data=undefined) {
 	if (ASSERTS_ENABLE) assert(_frames, [
 		assert_is_numeric("[async_frameout] frames should be number"),
 		assert_number_compare(">=", 0, "[async_frameout] frames should be 0 or more"),
@@ -45,7 +45,7 @@ function async_frameout(_frames, _data = undefined) {
 		frames: _frames,
 		data: _data,
 	};
-	var _future = future(method(_context, function(_resolve, _reject) {
+	var _promise = promise(method(_context, function(_resolve, _reject) {
 		var _frames = self.frames;
 		var _data = self.data;
 		var _context = {
@@ -67,5 +67,5 @@ function async_frameout(_frames, _data = undefined) {
 		_context.timesource = _timesource;
 		time_source_start(_timesource);
 	}));
-	return _future;
+	return _promise;
 }

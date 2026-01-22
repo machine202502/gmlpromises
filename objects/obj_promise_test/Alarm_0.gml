@@ -342,7 +342,7 @@ if (_test.reject_expected == _test.reject_received) {
 	show_debug_message("FAIL: not equals rejected");
 }
 
-_test = test_future_all;
+_test = test_promise_all;
 
 show_debug_message("");
 show_debug_message(_test.name);
@@ -367,7 +367,7 @@ if (_test.finished_c2) {
 	show_debug_message("FAIL: c2");
 }
 
-_test = test_future_any;
+_test = test_promise_any;
 
 show_debug_message("");
 show_debug_message(_test.name);
@@ -412,7 +412,7 @@ if (_test.finished_e4) {
 	show_debug_message("FAIL: e4");
 }
 
-_test = test_future_race;
+_test = test_promise_race;
 
 show_debug_message("");
 show_debug_message(_test.name);
@@ -452,7 +452,7 @@ if (_test.finished_g) {
 	show_debug_message("FAIL: g not finished");
 }
 
-_test = test_future_all_settled;
+_test = test_promise_all_settled;
 
 show_debug_message("");
 show_debug_message(_test.name);
@@ -485,5 +485,31 @@ if (_test.is_finished) {
 	show_debug_message("OK: order");
 } else {
 	show_debug_message("FAIL: order");
+}
+
+_test = test_http;
+
+show_debug_message("");
+show_debug_message(_test.name);
+show_debug_message("warn: the test requires an internet connection");
+if (_test.is_finished_create) {
+	show_debug_message("OK: http create");
+} else {
+	show_debug_message("FAIL: http create");
+}
+if (_test.is_finished_delete) {
+	show_debug_message("OK: http delete");
+} else {
+	show_debug_message("FAIL: http delete");
+}
+if (_test.is_finished_get) {
+	show_debug_message("OK: http get");
+} else {
+	show_debug_message("FAIL: http get");
+}
+if (_test.is_finished_get_not_found) {
+	show_debug_message("OK: http get not found");
+} else {
+	show_debug_message("FAIL: http get not found");
 }
 
