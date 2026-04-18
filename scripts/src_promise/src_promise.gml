@@ -292,28 +292,25 @@ function __Promise(_handler_init) constructor {
 		    var _finally_result = _callback_finally();
 
 		    if (is_promise(_finally_result)) {
-				var _result = {
-					result: _original_result,
-				}
-				
-		        if (_original_is_resolved) {
-		            return _finally_result.on_then(method(_result, function(_) {
-						var _result = self.result;
-						
-						self.result = undefined;
-						
-		                return _result;
-		            }));
-		        } else {
-		            return _finally_result.on_then(method(_result, function(_) {
-		                var _result = self.result;
-						
-						self.result = undefined;
-						
-		                throw _result;
-		            }));
-		        }
-		    }
+			    var _result = {
+			        result: _original_result,
+			        is_resolved: _original_is_resolved,
+			    };
+
+			    return _finally_result.on_then(method(_result, function() {
+			        var _is_resolved = self.is_resolved;
+			        var _result = self.result;
+
+			        self.result = undefined;
+			        self.is_resolved = undefined;
+
+			        if (_is_resolved) {
+			            return _result;
+			        } else {
+			            throw _result;
+			        }
+			    }));
+			}
 
 		    if (_original_is_resolved) {
 		        return _original_result;
