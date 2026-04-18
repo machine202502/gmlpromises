@@ -79,6 +79,13 @@ function __Promise(_handler_init) constructor {
 			return;
 		}
 		
+		if (is_promise(_resolved_data) && _resolved_data == self) {
+			__reject({
+				message: "TypeError: Chaining cycle detected for promise",
+			})
+			return;
+		}
+		
 		self.__status = __PROMISE_STATUS.HANDLING;
 		
 		if (is_promise(_resolved_data)) {
