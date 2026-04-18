@@ -6,7 +6,7 @@
   "name":"src_promise_http",
   "parent":{
     "name":"promise",
-    "path":"folders/utils/promise.yy",
+    "path":"folders/promise.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

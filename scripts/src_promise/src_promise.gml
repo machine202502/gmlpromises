@@ -634,11 +634,15 @@ function promise_all_settled(_promises) {
 							_value = {
 								is_resolved: true,
 								result: _result,
+								status: "fulfilled", // jslike
+								value: _result, // jslike
 							};
 						} else {
 							_value = {
 								is_resolved: false,
 								result: _result,
+								status: "rejected", // jslike
+								reason: _result, // jslike
 							};
 						}
 						

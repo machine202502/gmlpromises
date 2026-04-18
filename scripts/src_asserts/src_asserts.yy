@@ -6,7 +6,7 @@
   "name":"src_asserts",
   "parent":{
     "name":"utils",
-    "path":"folders/utils.yy",
+    "path":"folders/promise/utils.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

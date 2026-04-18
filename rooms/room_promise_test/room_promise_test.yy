@@ -20,7 +20,7 @@
   "name":"room_promise_test",
   "parent":{
     "name":"test",
-    "path":"folders/utils/promise/test.yy",
+    "path":"folders/promise/test.yy",
   },
   "parentRoom":null,
   "physicsSettings":{

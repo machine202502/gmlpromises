@@ -22,6 +22,8 @@ if (_status < 0) {
 		status_code: undefined,
 		response: undefined,
 		request: _request_data,
+		cookies: undefined,
+		headers: undefined,
 	});
 	
 	return;
@@ -40,6 +42,8 @@ if (_status_code >= 400) {
 		status_code: _status_code,
 		response: _response_data,
 		request: _request_data,
+		cookies: undefined,
+		headers: undefined,
 	});
 	
 	return;
@@ -51,4 +55,6 @@ _resolve({
 	status_code: _status_code,
 	response: _response_data,
 	request: _request_data,
+	cookies: undefined,
+	headers: undefined,
 });

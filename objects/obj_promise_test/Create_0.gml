@@ -260,7 +260,7 @@ function run_test_resolve() {
 	promise_resolve(23).on_then(function(_value) {
 		obj_promise_test.test_resolve.is_finished = true;
 		obj_promise_test.test_resolve.received = _value;
-	});
+	})
 	
 }
 

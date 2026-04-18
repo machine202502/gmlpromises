@@ -4,7 +4,7 @@
   "name":"note_promise_info",
   "parent":{
     "name":"promise",
-    "path":"folders/utils/promise.yy",
+    "path":"folders/promise.yy",
   },
   "resourceType":"GMNotes",
   "resourceVersion":"2.0",

@@ -10,7 +10,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"promise",
-    "path":"folders/utils/promise.yy",
+    "path":"folders/promise.yy",
   },
   "parentObjectId":null,
   "persistent":true,
