@@ -269,27 +269,52 @@ function __Promise(_handler_init) constructor {
 	
 	function on_finally(_callback_finally) {
 		if (ASSERTS_ENABLE) assert(_callback_finally, [
-			assert_is_callable("[__Promise.on_finally] callback_finally should be callable")
+		    assert_is_callable("[__Promise.on_finally] callback_finally should be callable")
 		]);
-		
+
 		var _context = {
-			callback_finally: _callback_finally,
+		    callback_finally: _callback_finally,
 		};
-		
+
 		var _next_promise = on(method(_context, function(_is_resolved, _promise_result) {
-			var _callback_finally = self.callback_finally;
-			
-			self.callback_finally = undefined;
-			
-			_callback_finally();
-			
-			if (_is_resolved) {
-				return _promise_result;
-			} else {
-				throw _promise_result;
-			}
+		    var _callback_finally = self.callback_finally;
+		    self.callback_finally = undefined;
+
+		    var _original_is_resolved = _is_resolved;
+		    var _original_result = _promise_result;
+		    var _finally_result = _callback_finally();
+
+		    if (is_promise(_finally_result)) {
+				var _result = {
+					result: _original_result,
+				}
+				
+		        if (_original_is_resolved) {
+		            return _finally_result.on_then(method(_result, function(_) {
+						var _result = self.result;
+						
+						self.result = undefined;
+						
+		                return _result;
+		            }));
+		        } else {
+		            return _finally_result.on_then(method(_result, function(_) {
+		                var _result = self.result;
+						
+						self.result = undefined;
+						
+		                throw _result;
+		            }));
+		        }
+		    }
+
+		    if (_original_is_resolved) {
+		        return _original_result;
+		    } else {
+		        throw _original_result;
+		    }
 		}));
-		
+
 		return _next_promise;
 	}
 	
